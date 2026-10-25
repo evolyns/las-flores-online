@@ -1,0 +1,426 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2C2C2A">
+<title>Panel del local · Las Flores online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--o:#E8711D;--o2:#FCE6D3;--ink:#2C2C2A;--mute:#77756F;--line:#E8E4DC;--bg:#F6F4EF;--ok:#1D9E75;--bad:#D85A30}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:16px}
+body{min-height:100vh;padding-bottom:calc(76px + env(safe-area-inset-bottom))}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select,textarea{font:inherit}
+a{color:inherit}
+.top{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff;padding:12px 16px;display:flex;align-items:center;gap:10px}
+.top .lf{width:30px;height:30px;border-radius:9px;background:var(--o);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none}
+.top b{font-size:16px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top select{background:#3B3A37;color:#fff;border:0;border-radius:8px;padding:6px 8px;max-width:150px}
+.top a{font-size:13px;opacity:.85;text-decoration:none}
+.demo{background:#FFF7E8;color:#8A5A12;font-size:12.5px;text-align:center;padding:6px 12px}
+main{max-width:560px;margin:0 auto;padding:14px 16px 24px}
+h1{font-size:23px;letter-spacing:-.3px;margin:4px 0 2px}
+h2{font-size:16.5px;margin:22px 0 10px}
+.sub{color:var(--mute);font-size:14px}
+.card{background:#fff;border-radius:14px;border:1px solid var(--line)}
+.pad{padding:14px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.stat{padding:12px 14px}.stat b{font-size:24px;display:block}.stat span{font-size:13px;color:var(--mute)}
+.acc{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:4px}
+.acc a{background:#fff;border:1px solid var(--line);border-radius:14px;padding:14px 8px;text-align:center;text-decoration:none;font-size:13.5px;font-weight:600}
+.acc a span{display:block;font-size:24px;margin-bottom:4px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:12px 16px;font-weight:600;font-size:15px;text-decoration:none}
+.btn.main{background:var(--o);color:#fff}.btn.dark{background:var(--ink);color:#fff}.btn.line{border:1px solid var(--line);background:#fff}
+.btn.ok{background:var(--ok);color:#fff}.btn.sm{padding:8px 12px;font-size:14px;border-radius:10px}
+.btn.block{width:100%}.btn:disabled{opacity:.5}
+.field{display:flex;flex-direction:column;gap:6px;margin:10px 0}
+.field label{font-size:13.5px;font-weight:600}
+.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;outline:none;font-size:16px;width:100%}
+.field input:focus,.field textarea:focus{border-color:var(--o)}
+.monto{font-size:34px!important;font-weight:700;text-align:center}
+.err{background:#FCEBE6;color:#8E2F14;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:10px}
+.okmsg{background:#E1F5EE;color:#0F5C46;border-radius:12px;padding:12px 14px;font-size:14.5px;margin-top:10px}
+.empty{padding:26px 16px;text-align:center;color:var(--mute);font-size:14.5px}
+.loading{padding:40px;text-align:center;color:var(--mute)}
+.item{display:flex;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item .t{flex:1;min-width:0}.item b{display:block}.item small{color:var(--mute);font-size:13px}
+.ph{width:54px;height:54px;border-radius:10px;background:var(--o2);flex:none;display:flex;align-items:center;justify-content:center;font-size:22px;overflow:hidden}
+.ph img{width:100%;height:100%;object-fit:cover}
+.stk{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.stk span{display:inline-flex;align-items:center;border:1px solid var(--line);border-radius:10px;overflow:hidden;font-size:13.5px}
+.stk span b{padding:5px 8px;background:#FAF8F4;font-weight:600;display:inline}
+.stk span button{padding:5px 9px;font-weight:700}
+.stk span i{font-style:normal;padding:0 4px;min-width:20px;text-align:center}
+.pill{display:inline-flex;font-size:12px;font-weight:600;border-radius:99px;padding:3px 9px}
+.pill.g{background:#E1F5EE;color:#0F6E56}.pill.y{background:#FFF4D6;color:#7A5A00}.pill.r{background:#FCEBE6;color:#8E2F14}.pill.n{background:#F1EFE8;color:#77756F}
+.cam{position:relative;border-radius:16px;overflow:hidden;background:#000;aspect-ratio:1}
+.cam video{width:100%;height:100%;object-fit:cover}
+.cam .marco{position:absolute;inset:18%;border:3px solid #fff;border-radius:18px;box-shadow:0 0 0 999px rgba(0,0,0,.35)}
+.vecino{display:flex;gap:12px;align-items:center}
+.vecino .av{width:46px;height:46px;border-radius:50%;background:var(--o);color:#fff;font-weight:700;display:flex;align-items:center;justify-content:center;font-size:18px}
+.seg{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.seg button{border:1px solid var(--line);background:#fff;border-radius:12px;padding:12px 6px;font-weight:600;font-size:14px}
+.seg button.on{border-color:var(--ink);background:var(--ink);color:#fff}
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav.tabs a{text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;font-size:11.5px;color:var(--mute)}
+nav.tabs a span{font-size:21px;line-height:1}
+nav.tabs a.on{color:var(--o);font-weight:600}
+nav.tabs a.caja span{background:var(--o);color:#fff;width:38px;height:38px;border-radius:12px;display:flex;align-items:center;justify-content:center;margin-top:-16px;font-size:19px;box-shadow:0 4px 10px rgba(232,113,29,.35)}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">Cargando el panel…</div></div>
+<nav class="tabs" id="tabs" hidden><div class="in">
+  <a href="#/" data-t="hoy"><span>🏠</span>Hoy</a>
+  <a href="#/caja" data-t="caja" class="caja"><span>▦</span>Caja</a>
+  <a href="#/productos" data-t="productos"><span>🏷️</span>Productos</a>
+  <a href="#/apartados" data-t="apartados"><span>🛍️</span>Apartados</a>
+  <a href="#/mas" data-t="mas"><span>⋯</span>Más</a>
+</div></nav>
+
+<script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js"></script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
+const SUPABASE_URL = 'https://jvqunkkiypbvypgumxql.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_r1mug-RwM_3RCSoUQ6lo0Q_KiHiSHlZ';
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const MODO_PRUEBA = true;
+
+const $app = document.getElementById('app');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pesos = n => '$' + Number(n).toLocaleString('es-AR', {maximumFractionDigits: 0});
+const errorTexto = e => (e?.message || String(e)).replace(/^.*?: /, '');
+const hora = d => new Date(d).toLocaleTimeString('es-AR', {hour: '2-digit', minute: '2-digit'});
+const fecha = d => new Date(d).toLocaleDateString('es-AR', {weekday: 'short', day: 'numeric', month: 'numeric'});
+
+let S = null;          // sesión
+let YO = null;         // mi fila en comercio_usuarios del local elegido (rol y permisos)
+let L = null;          // el local elegido
+let LOCALES = [];
+const puede = p => YO && (YO.rol === 'duenio' || ({caja: YO.puede_caja, stock: YO.puede_stock, apartados: YO.puede_apartados,
+  turnos: YO.puede_turnos, en_vivo: YO.puede_en_vivo, catalogo: YO.puede_catalogo, opiniones: YO.puede_opiniones})[p]);
+
+function arriba() {
+  return `<div class="top"><span class="lf">LF</span><b>${esc(L?.nombre || 'Panel del local')}</b>
+    ${LOCALES.length > 1 ? `<select id="cambiar">${LOCALES.map(x => `<option value="${x.id}" ${x.id === L.id ? 'selected' : ''}>${esc(x.nombre)}</option>`).join('')}</select>` : ''}
+    <a href="./#/l/${esc(L?.slug || '')}">Ver mi página ›</a></div>` + (MODO_PRUEBA ? '<div class="demo">Panel de prueba · locales de ejemplo</div>' : '');
+}
+function pantalla(tab, html) {
+  document.querySelectorAll('#tabs a').forEach(a => a.classList.toggle('on', a.dataset.t === tab));
+  $app.innerHTML = arriba() + `<main>${html}</main>`;
+  const c = document.getElementById('cambiar');
+  if (c) c.onchange = () => { elegir(+c.value); location.hash = '#/'; ruta(); };
+}
+function elegir(id) {
+  L = LOCALES.find(x => x.id === id) || LOCALES[0]; YO = L?.yo;
+  try { localStorage.setItem('lf-panel-local', L.id); } catch (_) {}
+}
+
+// ---------- Entrar ----------
+async function iniciar() {
+  const {data: {session}} = await sb.auth.getSession(); S = session;
+  if (!S) {
+    $app.innerHTML = `<div class="top"><span class="lf">LF</span><b>Panel del local</b></div><main>
+      <h1>Panel del local</h1><p class="sub">Para entrar al panel, primero entrá con tu celular en la app.</p>
+      <a class="btn main block" style="margin-top:16px" href="./#/perfil">Entrar con mi celular</a>
+      ${MODO_PRUEBA ? '<div class="card pad" style="margin-top:16px;font-size:14px;line-height:1.5"><b>Modo prueba:</b> la dueña de Amapola entra con 11 0000 0002 y el código 222222. La empleada, con 11 0000 0003 y 333333.</div>' : ''}</main>`;
+    return false;
+  }
+  const {data, error} = await sb.from('comercio_usuarios').select('*, comercios(id,nombre,slug,altura,whatsapp,rubros(nombre,modulo))').eq('usuario_id', S.user.id);
+  LOCALES = (data || []).filter(r => r.comercios).map(r => ({...r.comercios, yo: r}));
+  if (!LOCALES.length) {
+    $app.innerHTML = `<div class="top"><span class="lf">LF</span><b>Panel del local</b></div><main>
+      <h1>Todavía no tenés un local</h1><p class="sub">Tu celular no está sumado a ningún local de Las Flores. El dueño o el moderador te tienen que invitar con tu número.</p>
+      ${error ? `<div class="err">${esc(error.message)}</div>` : ''}<a class="btn line block" style="margin-top:16px" href="./">Volver a la app</a></main>`;
+    return false;
+  }
+  let guardado; try { guardado = +localStorage.getItem('lf-panel-local'); } catch (_) {}
+  elegir(guardado);
+  document.getElementById('tabs').hidden = false;
+  return true;
+}
+
+// ---------- Hoy ----------
+async function pHoy() {
+  pantalla('hoy', '<div class="loading">Cargando…</div>');
+  const [imp, ap, prom] = await Promise.all([
+    sb.from('impacto_portal').select('*').eq('comercio_id', L.id).maybeSingle(),
+    sb.from('apartados').select('id,vence').eq('comercio_id', L.id).eq('estado', 'activo'),
+    sb.from('promos').select('id,titulo,hasta').eq('comercio_id', L.id).gt('hasta', new Date().toISOString())]);
+  const i = imp.data || {};
+  const activos = (ap.data || []).filter(a => new Date(a.vence) > Date.now());
+  const hoyVence = activos.filter(a => new Date(a.vence) - Date.now() < 6 * 36e5);
+  pantalla('hoy', `<h1>Hola${YO.rol === 'duenio' ? '' : ''} 👋</h1><p class="sub">${YO.rol === 'duenio' ? 'Sos dueño/a' : 'Sos parte del equipo'} de ${esc(L.nombre)}</p>
+    <h2>Para hacer hoy</h2>
+    <div class="card">${[
+      activos.length ? `<a class="item" href="#/apartados" style="text-decoration:none"><span class="ph">🛍️</span><span class="t"><b>${activos.length} apartado${activos.length > 1 ? 's' : ''} para retirar</b><small>${hoyVence.length ? hoyVence.length + ' vence(n) en menos de 6 horas' : 'ninguno vence pronto'}</small></span>›</a>` : '',
+      !(prom.data || []).length && puede('en_vivo') ? `<a class="item" href="#/mas" style="text-decoration:none"><span class="ph">📣</span><span class="t"><b>No tenés promos activas</b><small>Una promo con cuenta regresiva aparece en el Inicio de todos</small></span>›</a>` : ''
+    ].join('') || '<div class="empty">Nada pendiente. ¡Buen día!</div>'}</div>
+    <h2>Accesos rápidos</h2>
+    <div class="acc">${puede('caja') ? '<a href="#/caja"><span>▦</span>Cobrar con QR</a>' : ''}${puede('catalogo') ? '<a href="#/productos/nuevo"><span>📷</span>Producto nuevo</a>' : ''}${puede('en_vivo') ? '<a href="#/mas"><span>📣</span>Promo o aviso</a>' : ''}</div>
+    <h2>Lo que te trajo el portal (30 días)</h2>
+    <div class="grid2">
+      <div class="card stat"><b>${i.visitas ?? 0}</b><span>visitas a tu página</span></div>
+      <div class="card stat"><b>${i.como_llegar ?? 0}</b><span>tocaron “Cómo llegar”</span></div>
+      <div class="card stat"><b>${i.consultas ?? 0}</b><span>consultas por WhatsApp</span></div>
+      <div class="card stat"><b>${i.compras_en_caja ?? 0}</b><span>compras con QR · ${pesos(i.monto_en_caja ?? 0)}</span></div>
+      <div class="card stat"><b>${i.apartados_retirados ?? 0}</b><span>apartados retirados</span></div>
+      <div class="card stat"><b>${i.seguidores ?? 0}</b><span>seguidores</span></div>
+    </div>`);
+}
+
+// ---------- Caja: escanear el QR del vecino ----------
+let stream = null, cajaPerfil = null;
+function apagarCamara() { if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; } }
+async function pCaja(msg = '') {
+  if (!puede('caja')) return pantalla('caja', '<div class="empty">No tenés permiso de caja. Pedíselo al dueño.</div>');
+  cajaPerfil = null;
+  pantalla('caja', `<h1>Caja</h1><p class="sub">Escaneá la tarjeta Las Flores del vecino para sumarle puntos.</p>${msg}
+    <div class="cam" style="margin-top:14px"><video id="v" playsinline muted></video><div class="marco"></div></div>
+    <p class="sub" id="estado" style="margin-top:10px;text-align:center">Abriendo la cámara…</p>
+    <details style="margin-top:14px"><summary class="sub">¿No anda la cámara?</summary>
+      <div class="field"><label for="manual">Pegá el código de la tarjeta</label><input id="manual" placeholder="LF:…"></div>
+      <button class="btn line block" id="usar">Usar este código</button></details>`);
+  document.getElementById('usar').onclick = () => leido(document.getElementById('manual').value.trim());
+  try {
+    stream = await navigator.mediaDevices.getUserMedia({video: {facingMode: 'environment'}});
+    const v = document.getElementById('v'); v.srcObject = stream; await v.play();
+    document.getElementById('estado').textContent = 'Apuntá al QR de la tarjeta';
+    const cv = document.createElement('canvas'), cx = cv.getContext('2d', {willReadFrequently: true});
+    const mirar = () => {
+      if (!stream || !document.getElementById('v')) return;
+      if (v.videoWidth) {
+        cv.width = 480; cv.height = Math.round(480 * v.videoHeight / v.videoWidth);
+        cx.drawImage(v, 0, 0, cv.width, cv.height);
+        const r = window.jsQR && jsQR(cx.getImageData(0, 0, cv.width, cv.height).data, cv.width, cv.height);
+        if (r && r.data.startsWith('LF:')) { apagarCamara(); return leido(r.data); }
+      }
+      requestAnimationFrame(mirar);
+    };
+    mirar();
+  } catch (e) {
+    const el = document.getElementById('estado'); if (el) el.textContent = 'No pudimos abrir la cámara. Usá “¿No anda la cámara?”.';
+  }
+}
+async function leido(txt) {
+  const m = /^LF:([0-9a-f-]{36}):(\d+)$/.exec(txt || '');
+  if (!m) return pCaja('<div class="err">Ese código no es una tarjeta Las Flores.</div>');
+  if (Math.abs(Math.floor(Date.now() / 6e4) - +m[2]) > 2) return pCaja('<div class="err">Ese QR es viejo (puede ser una captura). Pedile que abra la tarjeta de nuevo.</div>');
+  apagarCamara();
+  cajaPerfil = m[1];
+  const {data: nombre} = await sb.rpc('nombre_corto', {p: cajaPerfil});
+  pantalla('caja', `<h1>Caja</h1>
+    <div class="card pad vecino" style="margin-top:12px"><span class="av">${esc((nombre || 'V')[0])}</span><span><b>${esc(nombre || 'Vecino')}</b><br><small class="sub">Tarjeta Las Flores verificada</small></span></div>
+    <div class="field" style="margin-top:16px"><label for="monto">¿Cuánto gastó?</label><input id="monto" class="monto" inputmode="numeric" placeholder="$ 0" autofocus></div>
+    <p class="sub" id="pts" style="text-align:center">Suma 1 punto cada $1.000</p>
+    <button class="btn main block" id="sumar" style="margin-top:12px">Registrar compra y sumar puntos</button>
+    <h2>¿Quiere usar puntos?</h2>
+    <div class="field"><label for="usarp">Puntos a descontar (1 punto = $1)</label><input id="usarp" inputmode="numeric" placeholder="0"></div>
+    <button class="btn line block" id="canjear">Descontar puntos</button>
+    <div id="res"></div><button class="btn block sub" style="margin-top:14px" id="otro">Escanear otra tarjeta</button>`);
+  const mo = document.getElementById('monto');
+  mo.oninput = () => { const n = +mo.value.replace(/\D/g, ''); mo.value = n ? Number(n).toLocaleString('es-AR') : ''; document.getElementById('pts').textContent = n ? `Suma ${Math.floor(n / 1000)} puntos` : 'Suma 1 punto cada $1.000'; };
+  document.getElementById('otro').onclick = () => pCaja();
+  document.getElementById('sumar').onclick = async ev => {
+    const n = +mo.value.replace(/\D/g, ''); if (!n) return;
+    ev.target.disabled = true;
+    const {data, error} = await sb.from('compras_caja').insert({comercio_id: L.id, perfil_id: cajaPerfil, registrado_por: S.user.id, monto: n}).select('puntos').single();
+    document.getElementById('res').innerHTML = error ? `<div class="err">${esc(errorTexto(error))}</div>` : `<div class="okmsg">✓ Compra de ${pesos(n)} registrada. Sumó <b>${data.puntos} puntos</b>. Ya puede dejar su opinión del local.</div>`;
+    ev.target.disabled = !!data;
+  };
+  document.getElementById('canjear').onclick = async ev => {
+    const n = +document.getElementById('usarp').value.replace(/\D/g, ''); if (!n) return;
+    ev.target.disabled = true;
+    const {error} = await sb.from('movimientos_puntos').insert({perfil_id: cajaPerfil, comercio_id: L.id, tipo: 'usado', puntos: n, nota: 'Canje en caja'});
+    document.getElementById('res').innerHTML = error ? `<div class="err">${esc(errorTexto(error))}</div>` : `<div class="okmsg">✓ Descontaste ${n} puntos: hacele un descuento de ${pesos(n)}.</div>`;
+    ev.target.disabled = false;
+  };
+}
+
+// ---------- Productos ----------
+async function pProductos(msg = '') {
+  pantalla('productos', '<div class="loading">Cargando…</div>');
+  const {data} = await sb.from('productos').select('id,nombre,precio,activo,destacado,variantes(id,talle,stock),fotos(url,orden)').eq('comercio_id', L.id).order('nombre');
+  const P = data || [];
+  pantalla('productos', `<div style="display:flex;align-items:center;gap:10px"><h1 style="flex:1">Productos</h1>${puede('catalogo') ? '<a class="btn main sm" href="#/productos/nuevo">+ Nuevo</a>' : ''}</div>
+    <p class="sub">${P.length} productos · tocá + o − para ajustar el stock</p>${msg}
+    <div class="card" style="margin-top:12px">${P.map(p => `<div class="item" style="align-items:flex-start">
+      <span class="ph">${p.fotos?.[0] ? `<img src="${esc(p.fotos[0].url)}" alt="">` : '📦'}</span>
+      <span class="t"><b>${esc(p.nombre)}</b><small>${pesos(p.precio)} ${p.activo ? '' : '· <span class="pill n">oculto</span>'} ${p.destacado ? '· <span class="pill y">destacado</span>' : ''}</small>
+        <div class="stk">${(p.variantes || []).map(v => `<span><b>${esc(v.talle || 'Stock')}</b>${puede('stock') ? `<button data-v="${v.id}" data-d="-1">−</button><i id="s${v.id}">${v.stock}</i><button data-v="${v.id}" data-d="1">+</button>` : `<i>${v.stock}</i>`}</span>`).join('')}</div>
+        <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+          ${puede('catalogo') ? `<button class="btn line sm" data-precio="${p.id}" data-actual="${p.precio}">Precio</button><label class="btn line sm" style="cursor:pointer">📷 Foto<input type="file" accept="image/*" data-foto="${p.id}" hidden></label>` : ''}
+          ${puede('stock') ? `<button class="btn line sm" data-activo="${p.id}" data-val="${p.activo}">${p.activo ? 'Ocultar' : 'Mostrar'}</button>` : ''}
+        </div></span></div>`).join('') || '<div class="empty">Todavía no cargaste productos.</div>'}</div>`);
+  document.querySelectorAll('[data-d]').forEach(b => b.onclick = async () => {
+    const id = +b.dataset.v, el = document.getElementById('s' + id), nuevo = Math.max(0, +el.textContent + +b.dataset.d);
+    el.textContent = nuevo;
+    const {error} = await sb.from('variantes').update({stock: nuevo}).eq('id', id);
+    if (error) { el.textContent = +el.textContent - +b.dataset.d; alert(errorTexto(error)); }
+  });
+  document.querySelectorAll('[data-precio]').forEach(b => b.onclick = async () => {
+    const v = prompt('Nuevo precio', b.dataset.actual); if (v === null) return;
+    const n = +String(v).replace(/\D/g, ''); if (!n) return;
+    const {error} = await sb.from('productos').update({precio: n}).eq('id', +b.dataset.precio);
+    pProductos(error ? `<div class="err">${esc(errorTexto(error))}</div>` : '<div class="okmsg">Precio actualizado. Ya se ve en tu página.</div>');
+  });
+  document.querySelectorAll('[data-activo]').forEach(b => b.onclick = async () => {
+    const {error} = await sb.from('productos').update({activo: b.dataset.val !== 'true'}).eq('id', +b.dataset.activo);
+    pProductos(error ? `<div class="err">${esc(errorTexto(error))}</div>` : '');
+  });
+  document.querySelectorAll('[data-foto]').forEach(inp => inp.onchange = async () => {
+    const f = inp.files[0]; if (!f) return;
+    pantalla('productos', '<div class="loading">Achicando y subiendo la foto…</div>');
+    const r = await subirFoto(+inp.dataset.foto, f);
+    pProductos(r ? `<div class="err">${esc(r)}</div>` : '<div class="okmsg">Foto cargada.</div>');
+  });
+}
+async function achicar(file, max = 1200) {
+  const img = await createImageBitmap(file);
+  const k = Math.min(1, max / Math.max(img.width, img.height));
+  const c = document.createElement('canvas'); c.width = Math.round(img.width * k); c.height = Math.round(img.height * k);
+  c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+  return await new Promise(r => c.toBlob(r, 'image/webp', 0.82));
+}
+async function subirFoto(productoId, file) {
+  try {
+    const blob = await achicar(file);
+    const ruta = `${L.id}/${productoId}-${Date.now()}.webp`;
+    const {error} = await sb.storage.from('productos').upload(ruta, blob, {contentType: 'image/webp'});
+    if (error) return errorTexto(error);
+    const url = sb.storage.from('productos').getPublicUrl(ruta).data.publicUrl;
+    const {error: e2} = await sb.from('fotos').insert({producto_id: productoId, url, orden: 0});
+    return e2 ? errorTexto(e2) : '';
+  } catch (e) { return 'No pudimos procesar esa imagen.'; }
+}
+function pNuevo() {
+  if (!puede('catalogo')) return pProductos('<div class="err">Para cargar productos necesitás permiso de catálogo.</div>');
+  pantalla('productos', `<h1>Producto nuevo</h1><p class="sub">Con una foto y el precio ya alcanza. Lo demás se puede completar después.</p>
+    <label class="card pad" style="display:flex;gap:12px;align-items:center;margin-top:14px;cursor:pointer"><span class="ph" id="prev">📷</span><span><b>Sacar o elegir foto</b><br><small class="sub">Se achica sola antes de subir</small></span><input type="file" accept="image/*" capture="environment" id="foto" hidden></label>
+    <div class="field"><label for="nom">Nombre</label><input id="nom" placeholder="Ej: Vestido de lino"></div>
+    <div class="field"><label for="pre">Precio</label><input id="pre" inputmode="numeric" placeholder="$ 0"></div>
+    <div class="field"><label for="tal">Talles o variantes (separados por coma)</label><input id="tal" placeholder="Ej: S, M, L  ·  vacío si es único"></div>
+    <div class="field"><label for="stk">Stock de cada uno</label><input id="stk" inputmode="numeric" value="1"></div>
+    <button class="btn main block" id="guardar" style="margin-top:8px">Guardar y publicar</button><div id="res"></div>`);
+  const foto = document.getElementById('foto');
+  foto.onchange = () => { const f = foto.files[0]; if (f) document.getElementById('prev').innerHTML = `<img src="${URL.createObjectURL(f)}" alt="">`; };
+  document.getElementById('guardar').onclick = async ev => {
+    const nombre = document.getElementById('nom').value.trim(), precio = +document.getElementById('pre').value.replace(/\D/g, '');
+    const res = document.getElementById('res');
+    if (!nombre || !precio) { res.innerHTML = '<div class="err">Poné al menos el nombre y el precio.</div>'; return; }
+    ev.target.disabled = true;
+    const {data: p, error} = await sb.from('productos').insert({comercio_id: L.id, nombre, precio}).select('id').single();
+    if (error) { res.innerHTML = `<div class="err">${esc(errorTexto(error))}</div>`; ev.target.disabled = false; return; }
+    const talles = document.getElementById('tal').value.split(',').map(t => t.trim()).filter(Boolean);
+    const stock = Math.max(0, +document.getElementById('stk').value || 0);
+    await sb.from('variantes').insert((talles.length ? talles : [null]).map(t => ({producto_id: p.id, talle: t, stock})));
+    const r = foto.files[0] ? await subirFoto(p.id, foto.files[0]) : '';
+    location.hash = '#/productos';
+    setTimeout(() => pProductos(r ? `<div class="err">El producto se guardó pero la foto no: ${esc(r)}</div>` : `<div class="okmsg">“${esc(nombre)}” ya está en tu página.</div>`), 50);
+  };
+}
+
+// ---------- Apartados ----------
+async function pApartados(msg = '') {
+  pantalla('apartados', '<div class="loading">Cargando…</div>');
+  const {data} = await sb.from('apartados').select('id,codigo,estado,vence,creado,retirado_en,variantes(talle,productos(nombre))').eq('comercio_id', L.id).order('creado', {ascending: false}).limit(60);
+  const A = data || [];
+  const activos = A.filter(a => a.estado === 'activo' && new Date(a.vence) > Date.now()), resto = A.filter(a => !activos.includes(a));
+  const fila = a => `<div class="item"><span class="t"><b>${esc(a.variantes?.productos?.nombre || '')} ${esc(a.variantes?.talle || '')}</b>
+      <small>Código <b style="display:inline;color:var(--ink)">${esc(a.codigo)}</b> · ${a.estado === 'activo' ? 'vence ' + fecha(a.vence) + ' ' + hora(a.vence) : a.estado + (a.retirado_en ? ' ' + fecha(a.retirado_en) : '')}</small></span>
+      ${a.estado === 'activo' && puede('apartados') ? `<button class="btn ok sm" data-ret="${a.id}">Retiró</button><button class="btn line sm" data-can="${a.id}">✕</button>` : `<span class="pill ${a.estado === 'retirado' ? 'g' : 'n'}">${esc(a.estado)}</span>`}</div>`;
+  pantalla('apartados', `<h1>Apartados</h1><p class="sub">Cuando venga a buscarlo, pedile el código y tocá “Retiró”. Ahí puede opinar del local.</p>${msg}
+    <h2>Para retirar (${activos.length})</h2><div class="card">${activos.map(fila).join('') || '<div class="empty">No hay apartados pendientes.</div>'}</div>
+    ${resto.length ? `<h2>Anteriores</h2><div class="card">${resto.map(fila).join('')}</div>` : ''}`);
+  const cambiar = async (id, estado) => {
+    const {error} = await sb.from('apartados').update({estado}).eq('id', id);
+    pApartados(error ? `<div class="err">${esc(errorTexto(error))}</div>` : `<div class="okmsg">${estado === 'retirado' ? '✓ Marcado como retirado.' : 'Apartado cancelado: el talle vuelve a estar libre.'}</div>`);
+  };
+  document.querySelectorAll('[data-ret]').forEach(b => b.onclick = () => cambiar(+b.dataset.ret, 'retirado'));
+  document.querySelectorAll('[data-can]').forEach(b => b.onclick = () => { if (confirm('¿Cancelar este apartado?')) cambiar(+b.dataset.can, 'cancelado'); });
+}
+
+// ---------- Más: en vivo, promo, aviso, opiniones, equipo ----------
+async function pMas(msg = '') {
+  pantalla('mas', '<div class="loading">Cargando…</div>');
+  const esGastro = L.rubros?.modulo === 'menu';
+  const [viv, ops, eq, inv] = await Promise.all([
+    sb.from('en_vivo_vigente').select('*').eq('comercio_id', L.id).eq('tipo', 'mesas').maybeSingle(),
+    sb.from('opiniones').select('id,estrellas,texto,autor_nombre,estado,respuesta_local,creado').eq('comercio_id', L.id).order('creado', {ascending: false}).limit(20),
+    YO.rol === 'duenio' ? sb.from('comercio_usuarios').select('usuario_id,rol').eq('comercio_id', L.id) : Promise.resolve({data: []}),
+    YO.rol === 'duenio' ? sb.from('invitaciones_equipo').select('*').eq('comercio_id', L.id).is('usada_en', null) : Promise.resolve({data: []})]);
+  const m = viv.data;
+  pantalla('mas', `<h1>Más</h1>${msg}
+    ${esGastro && puede('en_vivo') ? `<h2>Mesas libres ahora</h2><div class="seg" id="sem">
+      ${[['hay_lugar', '🟢 Hay lugar'], ['pocas', '🟡 Pocas'], ['lleno', '🔴 Lleno']].map(([k, t]) => `<button data-sem="${k}" class="${m?.estado === k ? 'on' : ''}">${t}</button>`).join('')}</div>
+      <p class="sub" style="margin-top:6px">${m ? 'Se apaga sola a las ' + hora(m.vence) + ' si no la actualizás.' : 'Ahora no se muestra nada.'}</p>` : ''}
+    ${puede('en_vivo') ? `<h2>Promo con cuenta regresiva</h2><div class="card pad">
+      <div class="field"><label for="pt">Título</label><input id="pt" placeholder="Ej: 2x1 en remeras"></div>
+      <div class="field"><label for="pd">Detalle</label><input id="pd" placeholder="Ej: solo en efectivo"></div>
+      <div class="field"><label for="ph">Dura</label><select id="ph"><option value="3">3 horas</option><option value="24" selected>Hasta mañana</option><option value="72">3 días</option><option value="168">Una semana</option></select></div>
+      <button class="btn main block" id="promo">Publicar promo</button></div>
+      <h2>Aviso a tus seguidores</h2><div class="card pad"><p class="sub">Uno por semana, para que nadie se canse.</p>
+      <div class="field"><textarea id="av" rows="2" maxlength="280" placeholder="Ej: ¡Llegó la colección de verano!"></textarea></div>
+      <button class="btn dark block" id="aviso">Mandar aviso</button></div>` : ''}
+    <h2>Opiniones</h2><div class="card">${(ops.data || []).map(o => `<div class="item" style="align-items:flex-start"><span class="t">
+      <span style="color:#E2A400">${'★'.repeat(o.estrellas)}${'☆'.repeat(5 - o.estrellas)}</span> <b style="display:inline">${esc(o.autor_nombre)}</b> <span class="pill ${o.estado === 'publicada' ? 'g' : o.estado === 'pendiente' ? 'y' : 'r'}">${esc(o.estado)}</span>
+      <p style="margin:4px 0">${esc(o.texto || '')}</p>${o.respuesta_local ? `<small>Tu respuesta: ${esc(o.respuesta_local)}</small>` : puede('opiniones') ? `<button class="btn line sm" data-resp="${o.id}">Responder</button>` : ''}</span></div>`).join('') || '<div class="empty">Todavía no hay opiniones. Llegan cuando alguien compra con su QR o retira un apartado.</div>'}</div>
+    <p class="sub" style="margin-top:6px">Las opiniones no se pueden borrar ni cambiar. Podés responderlas o reportarlas si son falsas.</p>
+    ${YO.rol === 'duenio' ? `<h2>Tu equipo</h2><div class="card pad"><p class="sub">${(eq.data || []).length} persona(s) con acceso.${(inv.data || []).length ? ' Invitaciones pendientes: ' + inv.data.map(i => '+' + esc(i.telefono)).join(', ') : ''}</p>
+      <div class="field"><label for="itel">Invitar a un empleado por su celular</label><input id="itel" inputmode="numeric" placeholder="11 2345 6789"></div>
+      <button class="btn line block" id="invitar">Invitar</button><p class="sub" style="margin-top:8px">Cuando entre a la app con ese número, va a ver este panel. Por defecto puede usar la caja, el stock, los apartados y lo en vivo, pero no cambiar precios.</p></div>` : ''}
+    <a class="btn line block" style="margin-top:22px" href="./">Ir a la app de vecinos</a>`);
+  document.querySelectorAll('[data-sem]').forEach(b => b.onclick = async () => {
+    const fila = {comercio_id: L.id, tipo: 'mesas', estado: b.dataset.sem, actualizado_por: S.user.id, actualizado: new Date().toISOString(), vence: new Date(Date.now() + 36e5).toISOString()};
+    const q = m ? sb.from('estados_en_vivo').update(fila).eq('id', m.id) : sb.from('estados_en_vivo').insert(fila);
+    const {error} = await q; pMas(error ? `<div class="err">${esc(errorTexto(error))}</div>` : '<div class="okmsg">✓ Actualizado. Ya se ve en el Inicio de la app.</div>');
+  });
+  const bp = document.getElementById('promo');
+  if (bp) bp.onclick = async () => {
+    const titulo = document.getElementById('pt').value.trim(); if (!titulo) return;
+    const {error} = await sb.from('promos').insert({comercio_id: L.id, titulo, detalle: document.getElementById('pd').value.trim() || null, destacada: true,
+      hasta: new Date(Date.now() + +document.getElementById('ph').value * 36e5).toISOString()});
+    pMas(error ? `<div class="err">${esc(errorTexto(error))}</div>` : '<div class="okmsg">✓ Promo publicada. Ya aparece en “Promos de hoy”.</div>');
+  };
+  const ba = document.getElementById('aviso');
+  if (ba) ba.onclick = async () => {
+    const texto = document.getElementById('av').value.trim(); if (!texto) return;
+    const {error} = await sb.from('avisos_seguidores').insert({comercio_id: L.id, texto});
+    pMas(error ? `<div class="err">${esc(errorTexto(error))}</div>` : '<div class="okmsg">✓ Aviso enviado a tus seguidores.</div>');
+  };
+  document.querySelectorAll('[data-resp]').forEach(b => b.onclick = async () => {
+    const t = prompt('Tu respuesta (se ve en público)'); if (!t) return;
+    const {error} = await sb.from('opiniones').update({respuesta_local: t}).eq('id', +b.dataset.resp);
+    pMas(error ? `<div class="err">${esc(errorTexto(error))}</div>` : '<div class="okmsg">✓ Respuesta publicada.</div>');
+  });
+  const bi = document.getElementById('invitar');
+  if (bi) bi.onclick = async () => {
+    const d = document.getElementById('itel').value.replace(/\D/g, '');
+    const tel = d.startsWith('54') ? d : '549' + d.replace(/^0/, '');
+    if (tel.length < 12) return pMas('<div class="err">Revisá el número: código de área y número, sin el 15.</div>');
+    const {error} = await sb.from('invitaciones_equipo').insert({comercio_id: L.id, telefono: tel, rol: 'empleado'});
+    pMas(error ? `<div class="err">${esc(errorTexto(error))}</div>` : '<div class="okmsg">✓ Invitación lista. Cuando entre con ese celular, queda en tu equipo.</div>');
+  };
+}
+
+// ---------- Rutas ----------
+async function ruta() {
+  apagarCamara(); window.scrollTo(0, 0);
+  const h = location.hash.replace(/^#\/?/, '');
+  if (h === 'caja') return pCaja();
+  if (h === 'productos') return pProductos();
+  if (h === 'productos/nuevo') return pNuevo();
+  if (h === 'apartados') return pApartados();
+  if (h === 'mas') return pMas();
+  return pHoy();
+}
+if (await iniciar()) { window.addEventListener('hashchange', ruta); ruta(); }
+</script>
+</body>
+</html>
