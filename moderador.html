@@ -165,6 +165,7 @@ function marco(sec, html) {
         <a href="#/locales" class="${sec === 'locales' ? 'on' : ''}"><i>🏪</i>Locales</a>
         <a href="#/opiniones" class="${sec === 'opiniones' ? 'on' : ''}"><i>💬</i>Opiniones${n ? `<em>${n}</em>` : ''}</a>
         <a href="#/abonos" class="${sec === 'abonos' ? 'on' : ''}"><i>💳</i>Abonos</a>
+        <a href="#/metricas" class="${sec === 'metricas' ? 'on' : ''}"><i>📈</i>Métricas</a>
         <a href="#/auditoria" class="${sec === 'auditoria' ? 'on' : ''}"><i>📋</i>Auditoría</a>
       </nav><main>${html}</main></div>`;
 }
@@ -345,7 +346,7 @@ async function pLocal(id) {
   marco('locales', `<a href="#/locales" class="sub" style="text-decoration:none">‹ Locales</a>
     <div class="row" style="justify-content:space-between;margin-top:6px"><div><h1>${esc(L.nombre)} ${pillEstado(L.estado)}</h1>
       <p class="sub">Las Flores ${L.altura} (${L.mano}) · /${esc(L.slug)}</p></div>
-      <div class="row"><a class="btn line" href="./#/l/${esc(L.slug)}" target="_blank">Ver página</a><a class="btn dark" href="editor.html?c=${L.id}" target="_blank">Editar vidriera</a></div></div>
+      <div class="row"><a class="btn line" href="./#/l/${esc(L.slug)}" target="_blank">Ver página</a><a class="btn line" href="resultados.html?c=${L.id}&mes=${mesAnterior()}">📊 Resultados</a><a class="btn dark" href="editor.html?c=${L.id}" target="_blank">Editar vidriera</a></div></div>
     <div class="pasos">${pasos.map((p, i) => `<div class="paso ${p[2] ? 'hecho' : ''} ${i === ahora ? 'ahora' : ''}"><b>${i + 1}. ${p[0]}</b><span class="sub">${p[1]}</span></div>`).join('')}</div>
 
     <div class="ficha">
@@ -594,6 +595,41 @@ async function pAbonos() {
   document.querySelectorAll('tr[data-id]').forEach(tr => tr.onclick = () => location.hash = '#/local/' + tr.dataset.id);
 }
 
+// ---------- Métricas de la calle ----------
+function mesAnterior() { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
+let MET = {dias: '30', orden: 'visitas'};
+async function pMetricas() {
+  cargando('metricas');
+  const d2 = new Date(Date.now() + 60000), d1 = new Date(Date.now() - (+MET.dias) * 864e5);
+  const {data, error} = await sb.rpc('metricas_calle', {desde: d1.toISOString(), hasta: d2.toISOString()});
+  if (error) { marco('metricas', `<div class="err">${esc(errorTexto(error))}</div>`); return; }
+  const filas = (data || []).filter(f => f.estado !== 'pendiente');
+  const tot = k => filas.reduce((s, f) => s + Number(f[k] || 0), 0);
+  const quietos = filas.filter(f => f.estado === 'activo' && !+f.visitas && !+f.consultas && !+f.compras);
+  const COLS = [['visitas', 'Visitas'], ['como_llegar', 'Cómo llegar'], ['consultas', 'WhatsApp'], ['apartados', 'Apartados'], ['compras', 'Compras QR'], ['monto', 'Vendido QR'], ['seguidores', 'Seguidores']];
+  const ord = [...filas].sort((a, b) => Number(b[MET.orden]) - Number(a[MET.orden]));
+  const n = v => Number(v || 0).toLocaleString('es-AR', {maximumFractionDigits: 0});
+  marco('metricas', `<div class="row" style="justify-content:space-between"><div><h1>Métricas de la calle</h1><p class="sub">Lo que el portal le trae a cada local. Sirve para renovar abonos con números.</p></div>
+      <div class="seg">${[['7', '7 días'], ['30', '30 días'], ['90', '90 días']].map(([k, t]) => `<button data-d="${k}" class="${MET.dias === k ? 'on' : ''}">${t}</button>`).join('')}</div></div>
+    <div class="tiles">
+      <div class="card tile"><b>${n(tot('visitas'))}</b><span>visitas a páginas</span></div>
+      <div class="card tile"><b>${n(tot('como_llegar'))}</b><span>pidieron cómo llegar</span></div>
+      <div class="card tile"><b>${n(tot('consultas'))}</b><span>consultas por WhatsApp</span></div>
+      <div class="card tile"><b>${n(tot('apartados'))}</b><span>apartados</span></div>
+      <div class="card tile"><b>${n(tot('compras'))}</b><span>compras con QR</span></div>
+      <div class="card tile"><b>${pesos(tot('monto'))}</b><span>vendido con QR</span></div>
+    </div>
+    ${quietos.length ? `<div class="err" style="margin-top:14px">Sin movimiento en ${MET.dias} días: ${quietos.map(f => esc(f.nombre)).join(', ')}. Conviene visitarlos antes de que venza el abono.</div>` : ''}
+    <div class="card tw" style="margin-top:14px"><table><thead><tr><th>Local</th>${COLS.map(([k, t]) => `<th data-o="${k}" style="cursor:pointer;text-align:right;${MET.orden === k ? 'color:var(--ink)' : ''}">${t}${MET.orden === k ? ' ▼' : ''}</th>`).join('')}<th></th></tr></thead><tbody>
+      ${ord.map(f => `<tr><td><b>${esc(f.nombre)}</b><br>${pillEstado(f.estado)} <small class="sub">${esc(cap(f.plan))}</small></td>
+        ${COLS.map(([k]) => `<td style="text-align:right">${k === 'monto' ? pesos(f[k]) : n(f[k])}</td>`).join('')}
+        <td style="text-align:right;white-space:nowrap"><a class="btn line sm" href="resultados.html?c=${f.comercio_id}&p=${MET.dias}">Ver ›</a></td></tr>`).join('') || '<tr><td colspan="9"><div class="empty">Todavía no hay locales activos.</div></td></tr>'}
+    </tbody></table></div>
+    <p class="sub" style="font-size:13px;margin-top:10px">Tocá el título de una columna para ordenar. En cada local, “Ver” abre sus resultados para imprimir o mandárselos por WhatsApp.</p>`);
+  document.querySelectorAll('[data-d]').forEach(b => b.onclick = () => { MET.dias = b.dataset.d; pMetricas(); });
+  document.querySelectorAll('[data-o]').forEach(t => t.onclick = () => { MET.orden = t.dataset.o; pMetricas(); });
+}
+
 // ---------- Auditoría ----------
 const TABLAS = {comercios: 'Datos del local', comercio_usuarios: 'Equipo', horarios: 'Horarios', comercio_estilo: 'Estilo de la vidriera',
   comercio_intro: 'Intro', comercio_bloques: 'Bloques', vidriera_versiones: 'Versión de la vidriera', productos: 'Producto', variantes: 'Stock',
@@ -658,6 +694,7 @@ async function ruta() {
     else if (h[0] === 'local' && +h[1]) await pLocal(+h[1]);
     else if (h[0] === 'opiniones') await pOpiniones(h[1] === 'reportes' ? 'reportes' : 'pendientes');
     else if (h[0] === 'abonos') await pAbonos();
+    else if (h[0] === 'metricas') await pMetricas();
     else if (h[0] === 'auditoria') await pAuditoria(h[1]);
     else await pInicio();
   } catch (e) {

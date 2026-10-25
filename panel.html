@@ -173,7 +173,8 @@ async function pHoy() {
       <div class="card stat"><b>${i.compras_en_caja ?? 0}</b><span>compras con QR · ${pesos(i.monto_en_caja ?? 0)}</span></div>
       <div class="card stat"><b>${i.apartados_retirados ?? 0}</b><span>apartados retirados</span></div>
       <div class="card stat"><b>${i.seguidores ?? 0}</b><span>seguidores</span></div>
-    </div>`);
+    </div>
+    <a class="btn line block" style="margin-top:12px" href="resultados.html?c=${L.id}">📊 Ver resultados completos</a>`);
 }
 
 // ---------- Caja: escanear el QR del vecino ----------

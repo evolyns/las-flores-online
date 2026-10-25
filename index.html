@@ -252,6 +252,10 @@ const comoLlegar = c => `https://www.google.com/maps/search/?api=1&query=${encod
 const estiloDe = c => (D.vidrieras[c.id]?.contenido?.estilo) || {color: '#E8711D'};
 const errorTexto = e => (e?.message || String(e)).replace(/^.*?: /, '');
 async function registrar(cid, evento, producto_id = null) {
+  if (evento === 'vista') {   // una visita cada 30 minutos por local o producto: recargar no infla los números
+    const k = `v-${cid}-${producto_id || ''}`;
+    try { const t = +sessionStorage.getItem(k); if (t && Date.now() - t < 30 * 60000) return; sessionStorage.setItem(k, Date.now()); } catch (_) {}
+  }
   try { await sb.from('visitas').insert({comercio_id: cid, evento, producto_id}); } catch (_) {}
 }
 
@@ -656,6 +660,7 @@ async function abrirWhatsApp(c, producto = null, texto = '') {
 
 function hojaProducto(c, p, e) {
   if (!p) return;
+  if (!EN_PREVIA) registrar(c.id, 'vista', p.id);
   const vs = (p.variantes || []).filter(v => v.talle);
   const sh = document.createElement('div'); sh.className = 'sheet';
   sh.innerHTML = `<div class="in"><div class="big" style="background:${mezclar(e.color || '#E8711D', '#ffffff', .88)}">${p.fotos?.[0] ? `<img src="${esc(p.fotos[0].url)}" alt="">` : (EMOJI[c.rubros?.nombre] || '🏪')}</div>

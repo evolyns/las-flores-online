@@ -1,0 +1,234 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2C2C2A">
+<title>Resultados · Las Flores online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--o:#E8711D;--o2:#FCE6D3;--ink:#2C2C2A;--mute:#77756F;--line:#E8E4DC;--bg:#F6F4EF;--ok:#1D9E75;--bad:#D85A30;--azul:#3B6FB6}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select{font:inherit}
+a{color:inherit}
+[hidden]{display:none!important}
+.top{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff;padding:10px 16px;display:flex;align-items:center;gap:10px}
+.top .lf{width:30px;height:30px;border-radius:9px;background:var(--o);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none}
+.top b{font-size:16px;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.top a{font-size:13px;opacity:.85;text-decoration:none;white-space:nowrap}
+.demo{background:#FFF7E8;color:#8A5A12;font-size:12.5px;text-align:center;padding:6px 12px}
+main{max-width:860px;margin:0 auto;padding:18px 16px 40px}
+h1{font-size:24px;letter-spacing:-.3px;margin:0 0 4px}
+h2{font-size:16px;margin:26px 0 10px}
+.sub{color:var(--mute);font-size:14px}
+.card{background:#fff;border-radius:14px;border:1px solid var(--line)}
+.pad{padding:16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff;flex-wrap:wrap}
+.seg button{padding:8px 12px;font-size:13.5px;font-weight:500;border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button.on{background:var(--ink);color:#fff}
+.mes{border:1px solid var(--line);border-radius:10px;padding:7px 10px;background:#fff;font-size:13.5px}
+.hero{background:var(--ink);color:#fff;border-radius:16px;padding:20px;margin-top:16px}
+.hero p{font-size:17px;line-height:1.5}
+.hero b{color:#FFC48F}
+.kpis{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px;margin-top:14px}
+.kpi{padding:14px 16px}
+.kpi b{font-size:28px;display:block;letter-spacing:-.5px}
+.kpi span{font-size:13.5px;color:var(--mute);display:block}
+.kpi i{font-style:normal;font-size:12.5px;font-weight:600;display:inline-block;margin-top:6px;border-radius:99px;padding:2px 8px}
+.kpi i.up{background:#E1F5EE;color:#0F6E56}.kpi i.down{background:#FCEBE6;color:#8E2F14}.kpi i.eq{background:#F1EFE8;color:#77756F}
+.graf{padding:14px 16px 10px}
+.graf svg{width:100%;height:auto;display:block}
+.ley{display:flex;gap:14px;font-size:13px;color:var(--mute);margin-bottom:6px}
+.ley span::before{content:'';display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:6px;vertical-align:-1px;background:var(--c)}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--mute);font-weight:600;padding:10px 14px;border-bottom:1px solid var(--line)}
+td{padding:10px 14px;border-top:1px solid var(--line)}
+td.n,th.n{text-align:right}
+.item{display:flex;gap:12px;align-items:center;padding:12px 14px;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item .t{flex:1;min-width:0}.item small{color:var(--mute);font-size:13px;display:block}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:11px 16px;font-weight:600;font-size:14.5px;text-decoration:none}
+.btn.main{background:var(--o);color:#fff}.btn.line{border:1px solid var(--line);background:#fff}.btn.wa{background:#25D366;color:#fff}
+.empty{padding:22px 16px;text-align:center;color:var(--mute);font-size:14px}
+.loading{padding:40px;text-align:center;color:var(--mute)}
+.err{background:#FCEBE6;color:#8E2F14;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:10px}
+.nota{font-size:12.5px;color:var(--mute);margin-top:22px;line-height:1.5}
+.solo-imp{display:none}
+@media print{
+  html,body{background:#fff;font-size:12px}
+  .top,.demo,.ctrl,.acciones{display:none!important}
+  .solo-imp{display:block}
+  main{padding:0;max-width:none}
+  .card,.hero{break-inside:avoid}
+  .hero{background:#fff;color:var(--ink);border:2px solid var(--ink)}
+  .hero b{color:var(--o)}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">Cargando…</div></div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
+const sb = createClient('https://jvqunkkiypbvypgumxql.supabase.co', 'sb_publishable_r1mug-RwM_3RCSoUQ6lo0Q_KiHiSHlZ');
+const MODO_PRUEBA = true;
+
+const $app = document.getElementById('app');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const num = n => Number(n || 0).toLocaleString('es-AR', {maximumFractionDigits: 0});
+const pesos = n => '$' + num(n);
+const MESES = ['enero','febrero','marzo','abril','mayo','junio','julio','agosto','septiembre','octubre','noviembre','diciembre'];
+const params = new URLSearchParams(location.search);
+
+let S = null, MOD = false, LOCALES = [], CID = +params.get('c') || null;
+let periodo = params.get('mes') ? 'mes' : (params.get('p') || '30');
+let mes = params.get('mes') || '';
+
+// Fechas de un período, en hora de Wilde (UTC-3)
+function rango() {
+  if (periodo === 'mes' && /^\d{4}-\d{2}$/.test(mes)) {
+    const [y, m] = mes.split('-').map(Number);
+    const d1 = new Date(Date.UTC(y, m - 1, 1, 3)), d2 = new Date(Date.UTC(y, m, 1, 3));
+    return {d1, d2, texto: `en ${MESES[m - 1]} de ${y}`, corto: `${MESES[m - 1]} ${y}`, anterior: 'el mes anterior'};
+  }
+  const dias = +periodo || 30;
+  const d2 = new Date(Date.now() + 60000), d1 = new Date(Date.now() - dias * 864e5);
+  return {d1, d2, texto: `en los últimos ${dias} días`, corto: `últimos ${dias} días`, anterior: `los ${dias} días anteriores`};
+}
+function mesPasado() { const d = new Date(); d.setDate(1); d.setMonth(d.getMonth() - 1); return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`; }
+function cambio(a, b) {
+  a = +a || 0; b = +b || 0;
+  if (!b && !a) return '<i class="eq">sin movimiento</i>';
+  if (!b) return '<i class="up">nuevo</i>';
+  const p = Math.round((a - b) / b * 100);
+  return p > 0 ? `<i class="up">▲ ${p}%</i>` : p < 0 ? `<i class="down">▼ ${-p}%</i>` : '<i class="eq">igual</i>';
+}
+
+async function iniciar() {
+  const {data: {session}} = await sb.auth.getSession(); S = session;
+  if (!S) {
+    $app.innerHTML = `<div class="top"><span class="lf">LF</span><b>Resultados</b></div><main><h1>Resultados del local</h1>
+      <p class="sub">Entrá primero con tu celular en la app.</p><a class="btn main" style="margin-top:16px" href="./#/perfil">Entrar con mi celular</a></main>`;
+    return false;
+  }
+  const [{data: yo}, {data: eq}] = await Promise.all([
+    sb.from('perfiles').select('es_moderador').eq('id', S.user.id).maybeSingle(),
+    sb.from('comercio_usuarios').select('comercios(id,nombre)').eq('usuario_id', S.user.id)]);
+  MOD = !!yo?.es_moderador;
+  LOCALES = MOD ? ((await sb.from('comercios').select('id,nombre').order('nombre')).data || []) : (eq || []).map(r => r.comercios).filter(Boolean);
+  if (!LOCALES.length) {
+    $app.innerHTML = `<div class="top"><span class="lf">LF</span><b>Resultados</b></div><main><h1>No tenés un local</h1><p class="sub">Los resultados son para el equipo de cada local.</p></main>`;
+    return false;
+  }
+  if (!CID || !LOCALES.some(l => l.id === CID)) CID = LOCALES[0].id;
+  return true;
+}
+
+function grafico(dias) {
+  if (!dias.length) return '';
+  const W = 760, H = 180, pb = 22, pt = 10, max = Math.max(1, ...dias.map(d => Math.max(d.visitas, d.consultas)));
+  const n = dias.length, paso = W / n, ancho = Math.max(2, Math.min(18, paso * .38));
+  const y = v => H - pb - (H - pb - pt) * v / max;
+  const cada = Math.ceil(n / 8);
+  const barras = dias.map((d, i) => {
+    const x = i * paso + paso / 2;
+    return `<rect x="${x - ancho}" y="${y(d.visitas)}" width="${ancho}" height="${H - pb - y(d.visitas)}" rx="2" fill="#E8711D"><title>${d.dia}: ${d.visitas} visitas</title></rect>
+      <rect x="${x}" y="${y(d.consultas)}" width="${ancho}" height="${H - pb - y(d.consultas)}" rx="2" fill="#25A35A"><title>${d.dia}: ${d.consultas} consultas</title></rect>
+      ${i % cada === 0 ? `<text x="${x}" y="${H - 6}" font-size="11" text-anchor="middle" fill="#77756F">${+d.dia.slice(8)}/${+d.dia.slice(5, 7)}</text>` : ''}`;
+  }).join('');
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Visitas y consultas por día">
+    <line x1="0" x2="${W}" y1="${H - pb}" y2="${H - pb}" stroke="#E8E4DC"/>
+    <text x="2" y="${pt + 4}" font-size="11" fill="#77756F">${max}</text>${barras}</svg>`;
+}
+
+async function pintar() {
+  const r = rango();
+  $app.innerHTML = cabecera() + '<main><div class="loading">Calculando…</div></main>';
+  const {data, error} = await sb.rpc('resultados_local', {c: CID, desde: r.d1.toISOString(), hasta: r.d2.toISOString()});
+  if (error) { $app.querySelector('main').innerHTML = `<div class="err">${esc(error.message)}</div>`; return; }
+  const a = data.actual, b = data.anterior, L = data.local;
+  const trajo = [
+    a.visitas ? `<b>${num(a.visitas)}</b> visitas a su página` : '',
+    a.como_llegar ? `<b>${num(a.como_llegar)}</b> personas que pidieron cómo llegar` : '',
+    a.consultas ? `<b>${num(a.consultas)}</b> consultas por WhatsApp` : '',
+    a.compras ? `<b>${num(a.compras)}</b> compras con QR por <b>${pesos(a.monto)}</b>` : '',
+    a.retirados ? `<b>${num(a.retirados)}</b> apartados retirados` : ''].filter(Boolean);
+  const frase = trajo.length
+    ? `${r.texto.replace(/^en/, 'En')}, Las Flores online le trajo a <b>${esc(L.nombre)}</b>: ${trajo.slice(0, -1).join(', ')}${trajo.length > 1 ? ' y ' : ''}${trajo[trajo.length - 1]}.`
+    : `${r.texto.replace(/^en/, 'En')} todavía no hubo movimiento registrado para <b>${esc(L.nombre)}</b>. Compartí tu página y pedí que muestren el QR en la caja.`;
+  const kpi = (v, t, k, extra = '') => `<div class="card kpi"><b>${v}</b><span>${t}</span>${k !== undefined ? cambio(a[k], b[k]) : ''}${extra}</div>`;
+  const esperando = data.esperando || [];
+
+  $app.querySelector('main').innerHTML = `
+    <div class="solo-imp"><p class="sub">Las Flores online · Wilde</p></div>
+    <h1>${esc(L.nombre)}</h1><p class="sub">Resultados ${esc(r.corto)} · Las Flores ${L.altura}${MOD ? ` · plan ${esc(L.plan)}${L.abono_vence ? ' · abono hasta ' + new Date(L.abono_vence + 'T12:00').toLocaleDateString('es-AR') : ''}` : ''}</p>
+    <div class="hero"><p>${frase}</p></div>
+    <div class="kpis">
+      ${kpi(num(a.visitas), 'visitas a la página', 'visitas')}
+      ${kpi(num(a.productos_vistos), 'productos mirados', 'productos_vistos')}
+      ${kpi(num(a.como_llegar), 'tocaron “Cómo llegar”', 'como_llegar')}
+      ${kpi(num(a.consultas), 'consultas por WhatsApp', 'consultas')}
+      ${kpi(num(a.apartados), `apartados · ${num(a.retirados)} retirados`, 'apartados')}
+      ${kpi(num(a.compras), `compras con QR · ${num(a.clientes)} vecinos`, 'compras')}
+      ${kpi(pesos(a.monto), 'vendido con QR', 'monto')}
+      ${kpi(num(data.seguidores), `seguidores · ${num(a.seguidores_nuevos)} nuevos`, 'seguidores_nuevos')}
+      ${a.opiniones ? kpi(`${a.estrellas} ★`, `${num(a.opiniones)} opiniones nuevas`) : ''}
+    </div>
+    <p class="nota">Las flechas comparan con ${esc(r.anterior)}.</p>
+    <h2>Día por día</h2>
+    <div class="card graf"><div class="ley"><span style="--c:#E8711D">visitas</span><span style="--c:#25A35A">consultas</span></div>${grafico(data.por_dia || [])}</div>
+    <h2>Lo más mirado</h2>
+    <div class="card">${(data.top_productos || []).length ? `<table><thead><tr><th>Producto</th><th class="n">Lo miraron</th><th class="n">Consultas</th></tr></thead><tbody>
+      ${data.top_productos.map(p => `<tr><td>${esc(p.nombre)}</td><td class="n">${num(p.vistas)}</td><td class="n">${num(p.consultas)}</td></tr>`).join('')}</tbody></table>`
+      : '<div class="empty">Todavía nadie abrió un producto en este período.</div>'}</div>
+    <h2>Gente esperando</h2>
+    <div class="card">${esperando.map(e => `<div class="item"><span style="font-size:22px">🔔</span><div class="t"><b>${num(e.personas)} ${+e.personas === 1 ? 'persona espera' : 'personas esperan'} ${esc(e.producto)}${e.talle ? ' talle ' + esc(e.talle) : ''}</b>
+        <small>Cuando cargues stock les llega el aviso solo.</small></div></div>`).join('')}
+      ${data.esperando_precio ? `<div class="item"><span style="font-size:22px">🏷️</span><div class="t"><b>${num(data.esperando_precio)} ${data.esperando_precio == 1 ? 'persona espera' : 'personas esperan'} que baje algún precio</b><small>Si hacés una rebaja, les avisamos solos.</small></div></div>` : ''}
+      ${!esperando.length && !data.esperando_precio ? '<div class="empty">Nadie está esperando un talle o un precio ahora.</div>' : ''}</div>
+    <div class="row acciones" style="margin-top:22px">
+      <button class="btn main" id="imprimir">🖨️ Imprimir o guardar en PDF</button>
+      <a class="btn wa" id="wa" target="_blank" rel="noopener">Mandar por WhatsApp</a>
+    </div>
+    <p class="nota">Las visitas se cuentan una vez cada 30 minutos por persona y local, para que recargar la página no infle los números. Los números son de la app: no incluyen a quien entra a la calle sin usarla.</p>`;
+
+  document.getElementById('imprimir').onclick = () => window.print();
+  const texto = `*${L.nombre} · Las Flores online*\nResultados ${r.corto}:\n` + [
+    `👀 ${num(a.visitas)} visitas a la página`, `📍 ${num(a.como_llegar)} pidieron cómo llegar`, `💬 ${num(a.consultas)} consultas por WhatsApp`,
+    `🛍️ ${num(a.apartados)} apartados (${num(a.retirados)} retirados)`, `🧾 ${num(a.compras)} compras con QR por ${pesos(a.monto)}`,
+    `⭐ ${num(data.seguidores)} seguidores`].join('\n') + (esperando.length ? `\n\n${esperando.reduce((s, e) => s + +e.personas, 0)} personas esperan que vuelvan talles.` : '');
+  const tel = String(L.whatsapp || '').replace(/\D/g, ''), destino = MOD && tel ? (tel.startsWith('54') ? tel : '549' + tel) : '';
+  document.getElementById('wa').href = `https://wa.me/${destino}?text=${encodeURIComponent(texto)}`;
+  document.getElementById('wa').textContent = MOD && destino ? 'Mandárselo al local por WhatsApp' : 'Compartir por WhatsApp';
+}
+
+function cabecera() {
+  const nombre = LOCALES.find(l => l.id === CID)?.nombre || '';
+  return `<div class="top"><span class="lf">LF</span><b>Resultados · ${esc(nombre)}</b><a href="${MOD ? 'moderador.html#/metricas' : 'panel.html'}">‹ Volver</a></div>`
+    + (MODO_PRUEBA ? '<div class="demo">Proyecto de prueba · los números son de los locales de ejemplo</div>' : '')
+    + `<div class="ctrl" style="max-width:860px;margin:14px auto 0;padding:0 16px"><div class="row">
+      ${LOCALES.length > 1 ? `<select class="mes" id="loc">${LOCALES.map(l => `<option value="${l.id}" ${l.id === CID ? 'selected' : ''}>${esc(l.nombre)}</option>`).join('')}</select>` : ''}
+      <div class="seg">${[['7', '7 días'], ['30', '30 días'], ['90', '90 días'], ['mes', 'Un mes']].map(([k, t]) => `<button data-p="${k}" class="${periodo === k ? 'on' : ''}">${t}</button>`).join('')}</div>
+      ${periodo === 'mes' ? `<input type="month" class="mes" id="mes" value="${esc(mes)}">` : ''}</div></div>`;
+}
+function enganchar() {
+  document.querySelectorAll('[data-p]').forEach(b => b.onclick = () => { periodo = b.dataset.p; if (periodo === 'mes' && !mes) mes = mesPasado(); actualizarUrl(); correr(); });
+  const m = document.getElementById('mes'); if (m) m.onchange = () => { mes = m.value; actualizarUrl(); correr(); };
+  const l = document.getElementById('loc'); if (l) l.onchange = () => { CID = +l.value; actualizarUrl(); correr(); };
+}
+function actualizarUrl() {
+  const q = new URLSearchParams({c: CID}); if (periodo === 'mes') q.set('mes', mes); else q.set('p', periodo);
+  history.replaceState(null, '', '?' + q);
+}
+async function correr() { const p = pintar(); enganchar(); await p; }
+
+if (await iniciar()) correr();
+</script>
+</body>
+</html>
