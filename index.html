@@ -277,6 +277,8 @@ async function cargarTodo() {
   D.vidrieras = Object.fromEntries(vid.data.map(v => [v.comercio_id, v]));
   D.calif = Object.fromEntries(cal.data.map(c => [c.comercio_id, c]));
   D.porId = Object.fromEntries(D.comercios.map(c => [c.id, c]));
+  const {data: aj} = await sb.from('ajustes').select('clave,valor');   // reglas que cambia el moderador (puntos, apartados)
+  D.aj = Object.fromEntries((aj || []).map(a => [a.clave, +a.valor]));
   D.listo = true;
 }
 let SESION = null;
@@ -369,7 +371,32 @@ function pInicio() {
     <h2>${abiertos.length ? 'Abiertos ahora' : 'Todos los locales'}</h2>
     <div class="locs">${(abiertos.length ? abiertos : D.comercios).map(tarjetaLocal).join('')}</div>
     ${abiertos.length && abiertos.length < D.comercios.length ? `<h2>Cerrados ahora</h2><div class="locs">${D.comercios.filter(c => !abierto(c.id)).map(tarjetaLocal).join('')}</div>` : ''}
+    ${MODO_PRUEBA ? '<button class="btn line block" id="contanos" style="margin-top:22px">💬 Estamos probando: contanos qué te parece</button>' : ''}
   </main>`;
+  const bc = document.getElementById('contanos'); if (bc) bc.onclick = () => abrirComentario('inicio');
+}
+
+// ---------- Prueba piloto: comentarios de los vecinos ----------
+function abrirComentario(pantalla) {
+  const sh = document.createElement('div'); sh.className = 'sheet';
+  let tipo = 'idea';
+  sh.innerHTML = `<div class="in"><h2 style="margin:0 0 4px">Contanos</h2><p class="sub">Estamos probando la app en la calle. ¿Algo no anda, falta algo o te gustó? Lo leemos todo.</p>
+    <div class="talles" style="margin:14px 0 4px">${[['problema', '⚠️ Algo no anda'], ['idea', '💡 Una idea'], ['me_gusta', '❤️ Me gusta']].map(([k, t]) => `<button class="talle ${k === tipo ? 'on' : ''}" data-t="${k}" style="min-width:auto;padding:0 12px">${t}</button>`).join('')}</div>
+    <div class="field"><textarea id="ctx" rows="4" maxlength="1000" placeholder="Escribí acá…" style="border:1px solid var(--line);border-radius:12px;padding:12px;font:inherit;width:100%"></textarea></div>
+    <div id="cmsg"></div><div style="display:flex;flex-direction:column;gap:8px;margin-top:10px"><button class="btn main block" id="cenviar">Mandar</button><button class="btn block muted" id="ccerrar">Cerrar</button></div></div>`;
+  document.body.appendChild(sh);
+  sh.onclick = ev => { if (ev.target === sh) sh.remove(); };
+  sh.querySelector('#ccerrar').onclick = () => sh.remove();
+  sh.querySelectorAll('[data-t]').forEach(b => b.onclick = () => { tipo = b.dataset.t; sh.querySelectorAll('[data-t]').forEach(x => x.classList.toggle('on', x === b)); });
+  sh.querySelector('#cenviar').onclick = async ev => {
+    const texto = sh.querySelector('#ctx').value.trim(), m = sh.querySelector('#cmsg');
+    if (texto.length < 3) { m.innerHTML = '<div class="err">Escribí un poquito más.</div>'; return; }
+    ev.target.disabled = true;
+    const {error} = await sb.from('comentarios_piloto').insert({tipo, texto, pantalla, perfil_id: SESION?.user.id ?? null});
+    if (error) { ev.target.disabled = false; m.innerHTML = `<div class="err">${esc(errorTexto(error))}</div>`; return; }
+    sh.querySelector('.in').innerHTML = '<h2 style="margin:0 0 6px">¡Gracias! 🙌</h2><p class="sub">Lo vamos a leer. Así mejoramos la app para toda la calle.</p><button class="btn main block" style="margin-top:16px" id="clisto">Listo</button>';
+    sh.querySelector('#clisto').onclick = () => sh.remove();
+  };
 }
 
 // ---------- 2. Buscar ----------
@@ -515,9 +542,11 @@ async function pPerfil(msg = '') {
     ${perfil?.es_moderador ? '<a class="btn dark block" style="margin-top:10px" href="moderador.html">Panel del moderador</a>' : ''}
     <h2>Locales que seguís</h2><div class="locs">${(sigo || []).map(s => D.porId[s.comercio_id]).filter(Boolean).map(tarjetaLocal).join('') || '<div class="card empty">Todavía no seguís ningún local. Entrá a uno y tocá “Seguir”.</div>'}</div>
     <h2>Intros de los locales</h2><div class="card" style="padding:12px 14px"><label class="row" style="justify-content:space-between"><span>Mostrar la presentación al entrar a un local</span><input type="checkbox" id="intros" ${prefIntros() ? 'checked' : ''}></label></div>
-    <button class="btn line block" id="salir" style="margin-top:22px">Salir de mi cuenta</button>
+    ${MODO_PRUEBA ? '<button class="btn line block" id="contanos2" style="margin-top:22px">💬 Contanos qué te parece la app</button>' : ''}
+    <button class="btn line block" id="salir" style="margin-top:10px">Salir de mi cuenta</button>
     <p class="sub" style="text-align:center;font-size:13px;margin-top:16px"><a href="legal.html#privacidad">Privacidad</a> · <a href="legal.html#vecinos">Condiciones de uso</a></p></main>`;
   dibujarQR(uid);
+  const bc2 = document.getElementById('contanos2'); if (bc2) bc2.onclick = () => abrirComentario('perfil');
   document.getElementById('intros').onchange = e => { try { localStorage.setItem('lf-intros', e.target.checked ? 'si' : 'no'); } catch (_) {} };
   document.getElementById('salir').onclick = async () => { await sb.auth.signOut(); SESION = null; pPerfil(); };
   document.getElementById('fn').onsubmit = async ev => { ev.preventDefault();
@@ -671,7 +700,7 @@ function hojaProducto(c, p, e) {
     ${vs.length ? `<p style="margin-top:14px;font-weight:600">Talles</p><div class="talles">${vs.map(v => `<button class="talle ${v.stock > 0 ? '' : 'agot'}" data-v="${v.id}" title="${v.stock > 0 ? '' : 'Sin stock'}">${esc(v.talle)}</button>`).join('')}</div>` : '<div style="height:14px"></div>'}
     <div style="display:flex;flex-direction:column;gap:8px">
       <button class="btn wa block" id="pwa">Consultar por WhatsApp</button>
-      ${c.rubros?.modulo !== 'menu' ? `<button class="btn line block" id="papartar">Apartar hasta mañana</button>` : ''}
+      ${c.rubros?.modulo !== 'menu' ? `<button class="btn line block" id="papartar">${(D.aj?.apartado_horas ?? 24) === 24 ? 'Apartar hasta mañana' : `Apartar por ${D.aj.apartado_horas} horas`}</button>` : ''}
       <button class="btn line block" id="pavisar" hidden>🔔 Avisame cuando vuelva</button>
       ${c.rubros?.modulo !== 'menu' ? '<button class="btn block muted" id="pprecio" style="font-weight:500;font-size:14px">🏷️ Avisame si baja de precio</button>' : ''}
       <div id="pmsg"></div><button class="btn block muted" id="pcerrar">Cerrar</button></div></div>`;

@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Carteles · Las Flores online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--o:#E8711D;--ink:#2C2C2A;--mute:#77756F;--line:#E8E4DC;--bg:#F6F4EF}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif}
+[hidden]{display:none!important}
+.barra{position:sticky;top:0;z-index:5;background:var(--ink);color:#fff;padding:10px 16px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.barra b{flex:1;min-width:160px}
+.barra select,.barra button,.barra a{font:inherit;font-size:14px;border-radius:10px;padding:8px 12px;border:0;text-decoration:none}
+.barra select{background:#3B3A37;color:#fff}
+.barra button{background:var(--o);color:#fff;font-weight:600;cursor:pointer}
+.barra a{color:#fff;opacity:.85}
+.nota{max-width:820px;margin:14px auto 0;padding:0 16px;font-size:14px;color:var(--mute);line-height:1.5}
+.hojas{display:flex;flex-direction:column;align-items:center;gap:24px;padding:20px 12px 60px}
+.hoja{width:210mm;max-width:100%;aspect-ratio:210/297;background:#fff;box-shadow:0 4px 18px rgba(0,0,0,.12);position:relative;overflow:hidden;
+  display:flex;flex-direction:column;align-items:center;justify-content:space-between;padding:7% 8%;text-align:center}
+.hoja .marca{display:flex;align-items:center;gap:10px;font-weight:700;font-size:clamp(14px,2.6vw,22px)}
+.hoja .marca i{width:1.8em;height:1.8em;border-radius:.45em;background:var(--o);color:#fff;font-style:normal;font-size:.8em;display:flex;align-items:center;justify-content:center}
+.hoja h1{font-size:clamp(28px,7vw,64px);line-height:1.05;letter-spacing:-.02em;font-weight:800}
+.hoja h2{font-size:clamp(16px,3.4vw,30px);font-weight:600;line-height:1.25}
+.hoja .qr{width:52%;aspect-ratio:1;padding:3%;border:6px solid var(--ink);border-radius:5%}
+.hoja .qr svg{width:100%;height:100%;display:block}
+.hoja .url{font-size:clamp(11px,2vw,16px);color:var(--mute);word-break:break-all}
+.hoja .pasos{display:grid;grid-template-columns:repeat(3,1fr);gap:4%;width:100%;font-size:clamp(11px,2.1vw,17px);line-height:1.3}
+.hoja .pasos div{background:#FFF4EA;border-radius:14px;padding:10% 6%}
+.hoja .pasos b{display:block;font-size:2em;color:var(--o)}
+.hoja.oscura{background:var(--ink);color:#fff}
+.hoja.oscura .qr{background:#fff;border-color:#fff}
+.hoja.oscura .url{color:#CFCBC2}
+.hoja.oscura .pasos div{background:#3B3A37}
+.hoja.mesa{aspect-ratio:auto;height:auto;width:105mm;padding:6% 7%;gap:14px}
+.hoja.mesa h1{font-size:clamp(22px,5vw,34px)}.hoja.mesa .qr{width:62%}
+.franja{position:absolute;left:0;right:0;bottom:0;height:2.2%;background:var(--o)}
+@page{size:A4;margin:0}
+@media print{
+  html,body{background:#fff}
+  .barra,.nota{display:none}
+  .hojas{padding:0;gap:0}
+  .hoja{box-shadow:none;width:210mm;height:297mm;aspect-ratio:auto;break-after:page}
+  .hoja.mesa{width:105mm;height:148mm}
+  .hoja.oscura{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+  .franja,.pasos div,.marca i{-webkit-print-color-adjust:exact;print-color-adjust:exact}
+}
+</style>
+</head>
+<body>
+<div class="barra"><b>Carteles para el local</b><select id="loc"></select><button id="imp">🖨️ Imprimir</button><a id="volver" href="panel.html">‹ Volver</a></div>
+<p class="nota">Tres carteles: uno grande para la vidriera, uno oscuro para la puerta y uno chico para la caja. Se imprimen en A4 común (la impresora de un locutorio sirve).
+El QR lleva directo a la página del local en Las Flores online.</p>
+<div class="hojas" id="hojas"><p class="nota">Cargando…</p></div>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
+const sb = createClient('https://jvqunkkiypbvypgumxql.supabase.co', 'sb_publishable_r1mug-RwM_3RCSoUQ6lo0Q_KiHiSHlZ');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const BASE = location.href.replace(/carteles\.html.*$/, '');
+
+function qrSvg(texto) {
+  const q = qrcode(0, 'M'); q.addData(texto); q.make();
+  const n = q.getModuleCount(); let d = '';
+  for (let y = 0; y < n; y++) for (let x = 0; x < n; x++) if (q.isDark(y, x)) d += `M${x} ${y}h1v1h-1z`;
+  return `<svg viewBox="0 0 ${n} ${n}" shape-rendering="crispEdges"><path d="${d}" fill="#2C2C2A"/></svg>`;
+}
+const marca = '<div class="marca"><i>LF</i>Las Flores online</div>';
+
+async function iniciar() {
+  const {data: {session}} = await sb.auth.getSession();
+  const pedido = +new URLSearchParams(location.search).get('c');
+  let locales = [], mod = false;
+  if (session) {
+    const [{data: yo}, {data: eq}] = await Promise.all([
+      sb.from('perfiles').select('es_moderador').eq('id', session.user.id).maybeSingle(),
+      sb.from('comercio_usuarios').select('comercios(id,nombre,slug,altura,rubros(nombre))').eq('usuario_id', session.user.id)]);
+    mod = !!yo?.es_moderador;
+    locales = mod ? ((await sb.from('comercios').select('id,nombre,slug,altura,rubros(nombre)').order('nombre')).data || [])
+                  : (eq || []).map(r => r.comercios).filter(Boolean);
+  }
+  document.getElementById('volver').href = mod ? 'moderador.html#/piloto' : 'panel.html#/mas';
+  if (!locales.length) { document.getElementById('hojas').innerHTML = '<p class="nota">Entrá con tu celular en la app (como dueño del local o moderador) para hacer los carteles.</p>'; return; }
+  const sel = document.getElementById('loc');
+  sel.innerHTML = locales.map(l => `<option value="${l.id}" ${l.id === pedido ? 'selected' : ''}>${esc(l.nombre)}</option>`).join('');
+  sel.hidden = locales.length < 2;
+  const pintar = () => {
+    const L = locales.find(l => l.id === +sel.value) || locales[0];
+    const url = `${BASE}#/l/${L.slug}`, app = BASE;
+    document.title = `Carteles · ${L.nombre}`;
+    document.getElementById('hojas').innerHTML = `
+      <section class="hoja">${marca}
+        <div><h2>Encontrá a</h2><h1>${esc(L.nombre)}</h1><h2 style="margin-top:8px">en el celular</h2></div>
+        <div class="qr">${qrSvg(url)}</div>
+        <div class="pasos"><div><b>1</b>Apuntá la cámara al código</div><div><b>2</b>Mirá productos, precios y horarios</div><div><b>3</b>Seguinos y te avisamos las novedades</div></div>
+        <p class="url">${esc(url)}</p><div class="franja"></div></section>
+      <section class="hoja oscura">${marca}
+        <div><h1>Sumá puntos<br>en Las Flores</h1><h2 style="margin-top:14px">Mostrá tu tarjeta en la caja de ${esc(L.nombre)}<br>y de todos los locales de la calle</h2></div>
+        <div class="qr">${qrSvg(app + '#/perfil')}</div>
+        <p class="url">Escaneá, entrá con tu celular y listo. Es gratis.</p></section>
+      <section class="hoja mesa">${marca}
+        <h1>¿Tenés la tarjeta<br>Las Flores?</h1><p style="font-size:15px;line-height:1.4">Mostrala acá y sumás puntos con tu compra</p>
+        <div class="qr">${qrSvg(app + '#/perfil')}</div><p class="url">${esc(L.nombre)} · Las Flores ${L.altura}</p></section>`;
+  };
+  sel.onchange = pintar; pintar();
+}
+document.getElementById('imp').onclick = () => window.print();
+iniciar();
+</script>
+</body>
+</html>

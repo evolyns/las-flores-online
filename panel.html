@@ -104,6 +104,8 @@ let S = null;          // sesión
 let YO = null;         // mi fila en comercio_usuarios del local elegido (rol y permisos)
 let L = null;          // el local elegido
 let LOCALES = [];
+const AJ = {pesos_por_punto: 1000, valor_punto: 1};
+const reglaPuntos = () => `Suma 1 punto cada ${pesos(AJ.pesos_por_punto)}`;
 const puede = p => YO && (YO.rol === 'duenio' || ({caja: YO.puede_caja, stock: YO.puede_stock, apartados: YO.puede_apartados,
   turnos: YO.puede_turnos, en_vivo: YO.puede_en_vivo, catalogo: YO.puede_catalogo, opiniones: YO.puede_opiniones})[p]);
 
@@ -135,6 +137,8 @@ async function iniciar() {
   }
   const {data, error} = await sb.from('comercio_usuarios').select('*, comercios(id,nombre,slug,altura,whatsapp,rubros(nombre,modulo))').eq('usuario_id', S.user.id);
   LOCALES = (data || []).filter(r => r.comercios).map(r => ({...r.comercios, yo: r}));
+  const {data: aj} = await sb.from('ajustes').select('clave,valor');   // reglas de puntos que cambia el moderador
+  for (const a of aj || []) AJ[a.clave] = +a.valor;
   if (!LOCALES.length) {
     $app.innerHTML = `<div class="top"><span class="lf">LF</span><b>Panel del local</b></div><main>
       <h1>Todavía no tenés un local</h1><p class="sub">Tu celular no está sumado a ningún local de Las Flores. El dueño o el moderador te tienen que invitar con tu número.</p>
@@ -220,14 +224,14 @@ async function leido(txt) {
   pantalla('caja', `<h1>Caja</h1>
     <div class="card pad vecino" style="margin-top:12px"><span class="av">${esc((nombre || 'V')[0])}</span><span><b>${esc(nombre || 'Vecino')}</b><br><small class="sub">Tarjeta Las Flores verificada</small></span></div>
     <div class="field" style="margin-top:16px"><label for="monto">¿Cuánto gastó?</label><input id="monto" class="monto" inputmode="numeric" placeholder="$ 0" autofocus></div>
-    <p class="sub" id="pts" style="text-align:center">Suma 1 punto cada $1.000</p>
+    <p class="sub" id="pts" style="text-align:center">${reglaPuntos()}</p>
     <button class="btn main block" id="sumar" style="margin-top:12px">Registrar compra y sumar puntos</button>
     <h2>¿Quiere usar puntos?</h2>
-    <div class="field"><label for="usarp">Puntos a descontar (1 punto = $1)</label><input id="usarp" inputmode="numeric" placeholder="0"></div>
+    <div class="field"><label for="usarp">Puntos a descontar (1 punto = $${AJ.valor_punto.toLocaleString('es-AR')})</label><input id="usarp" inputmode="numeric" placeholder="0"></div>
     <button class="btn line block" id="canjear">Descontar puntos</button>
     <div id="res"></div><button class="btn block sub" style="margin-top:14px" id="otro">Escanear otra tarjeta</button>`);
   const mo = document.getElementById('monto');
-  mo.oninput = () => { const n = +mo.value.replace(/\D/g, ''); mo.value = n ? Number(n).toLocaleString('es-AR') : ''; document.getElementById('pts').textContent = n ? `Suma ${Math.floor(n / 1000)} puntos` : 'Suma 1 punto cada $1.000'; };
+  mo.oninput = () => { const n = +mo.value.replace(/\D/g, ''); mo.value = n ? Number(n).toLocaleString('es-AR') : ''; document.getElementById('pts').textContent = n ? `Suma ${Math.floor(n / AJ.pesos_por_punto)} puntos` : reglaPuntos(); };
   document.getElementById('otro').onclick = () => pCaja();
   document.getElementById('sumar').onclick = async ev => {
     const n = +mo.value.replace(/\D/g, ''); if (!n) return;
@@ -240,7 +244,7 @@ async function leido(txt) {
     const n = +document.getElementById('usarp').value.replace(/\D/g, ''); if (!n) return;
     ev.target.disabled = true;
     const {error} = await sb.from('movimientos_puntos').insert({perfil_id: cajaPerfil, comercio_id: L.id, tipo: 'usado', puntos: n, nota: 'Canje en caja'});
-    document.getElementById('res').innerHTML = error ? `<div class="err">${esc(errorTexto(error))}</div>` : `<div class="okmsg">✓ Descontaste ${n} puntos: hacele un descuento de ${pesos(n)}.</div>`;
+    document.getElementById('res').innerHTML = error ? `<div class="err">${esc(errorTexto(error))}</div>` : `<div class="okmsg">✓ Descontaste ${n} puntos: hacele un descuento de ${pesos(n * AJ.valor_punto)}.</div>`;
     ev.target.disabled = false;
   };
 }
@@ -378,7 +382,19 @@ async function pMas(msg = '') {
       <div class="field"><label for="itel">Invitar a un empleado por su celular</label><input id="itel" inputmode="numeric" placeholder="11 2345 6789"></div>
       <button class="btn line block" id="invitar">Invitar</button><p class="sub" style="margin-top:8px">Cuando entre a la app con ese número, va a ver este panel. Por defecto puede usar la caja, el stock, los apartados y lo en vivo, pero no cambiar precios.</p></div>` : ''}
     ${YO.rol === 'duenio' ? '<a class="btn dark block" style="margin-top:22px" href="editor.html">Editar mi vidriera (mejor en la computadora)</a>' : ''}
+    ${YO.rol === 'duenio' ? `<a class="btn line block" style="margin-top:10px" href="carteles.html?c=${L.id}">🖨️ Carteles para la vidriera y la caja</a>` : ''}
+    <h2>Prueba piloto</h2><div class="card pad"><p class="sub">¿Algo no anda, falta algo o te gustó? Contanos: lo leemos todo.</p>
+      <div class="seg" style="margin-top:10px">${[['problema', '⚠️ No anda'], ['idea', '💡 Idea'], ['me_gusta', '❤️ Me gusta']].map(([k, t]) => `<button data-ct="${k}" class="${k === 'idea' ? 'on' : ''}">${t}</button>`).join('')}</div>
+      <div class="field"><textarea id="ctexto" rows="3" maxlength="1000" placeholder="Ej: en la caja no me toma el QR con poca luz"></textarea></div>
+      <button class="btn dark block" id="cmandar">Mandar comentario</button></div>
     <a class="btn line block" style="margin-top:10px" href="./">Ir a la app de vecinos</a>`);
+  let ctipo = 'idea';
+  document.querySelectorAll('[data-ct]').forEach(b => b.onclick = () => { ctipo = b.dataset.ct; document.querySelectorAll('[data-ct]').forEach(x => x.classList.toggle('on', x === b)); });
+  document.getElementById('cmandar').onclick = async () => {
+    const texto = document.getElementById('ctexto').value.trim(); if (texto.length < 3) return;
+    const {error} = await sb.from('comentarios_piloto').insert({tipo: ctipo, texto, comercio_id: L.id, desde: 'panel', pantalla: 'panel', perfil_id: S.user.id});
+    pMas(error ? `<div class="err">${esc(errorTexto(error))}</div>` : '<div class="okmsg">✓ ¡Gracias! Lo vamos a leer.</div>');
+  };
   document.querySelectorAll('[data-sem]').forEach(b => b.onclick = async () => {
     const fila = {comercio_id: L.id, tipo: 'mesas', estado: b.dataset.sem, actualizado_por: S.user.id, actualizado: new Date().toISOString(), vence: new Date(Date.now() + 36e5).toISOString()};
     const q = m ? sb.from('estados_en_vivo').update(fila).eq('id', m.id) : sb.from('estados_en_vivo').insert(fila);

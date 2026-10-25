@@ -158,7 +158,7 @@ function confirmar(btn, accion) {
 }
 
 // ---------- Estructura ----------
-let PEND = {opiniones: 0, reportes: 0};
+let PEND = {opiniones: 0, reportes: 0, comentarios: 0};
 function marco(sec, html) {
   const n = PEND.opiniones + PEND.reportes;
   $app.innerHTML = `<div class="top"><span class="lf">LF</span><b>Moderación</b><a href="./">Ir a la app ›</a></div>`
@@ -170,6 +170,8 @@ function marco(sec, html) {
         <a href="#/abonos" class="${sec === 'abonos' ? 'on' : ''}"><i>💳</i>Abonos</a>
         <a href="#/metricas" class="${sec === 'metricas' ? 'on' : ''}"><i>📈</i>Métricas</a>
         <a href="#/auditoria" class="${sec === 'auditoria' ? 'on' : ''}"><i>📋</i>Auditoría</a>
+        <a href="#/piloto" class="${sec === 'piloto' ? 'on' : ''}"><i>🧪</i>Piloto${PEND.comentarios ? `<em>${PEND.comentarios}</em>` : ''}</a>
+        <a href="#/ajustes" class="${sec === 'ajustes' ? 'on' : ''}"><i>⚙️</i>Ajustes</a>
         <a href="#/sistema" class="${sec === 'sistema' ? 'on' : ''}"><i>🛠️</i>Sistema</a>
       </nav><main>${html}</main></div>`;
 }
@@ -184,10 +186,11 @@ async function datosBase() {
   RUBROS = r.data || []; CATS = c.data || []; PLANES = p.data || []; COMS = k.data || [];
 }
 async function contarPendientes() {
-  const [o, r] = await Promise.all([
+  const [o, r, k] = await Promise.all([
     sb.from('opiniones').select('id', {count: 'exact', head: true}).eq('estado', 'pendiente'),
-    sb.from('reportes').select('id', {count: 'exact', head: true}).eq('estado', 'abierto')]);
-  PEND = {opiniones: o.count || 0, reportes: r.count || 0};
+    sb.from('reportes').select('id', {count: 'exact', head: true}).eq('estado', 'abierto'),
+    sb.from('comentarios_piloto').select('id', {count: 'exact', head: true}).eq('resuelto', false)]);
+  PEND = {opiniones: o.count || 0, reportes: r.count || 0, comentarios: k.count || 0};
 }
 
 // ---------- Entrar ----------
@@ -350,7 +353,7 @@ async function pLocal(id) {
   marco('locales', `<a href="#/locales" class="sub" style="text-decoration:none">‹ Locales</a>
     <div class="row" style="justify-content:space-between;margin-top:6px"><div><h1>${esc(L.nombre)} ${pillEstado(L.estado)}</h1>
       <p class="sub">Las Flores ${L.altura} (${L.mano}) · /${esc(L.slug)}</p></div>
-      <div class="row"><a class="btn line" href="./#/l/${esc(L.slug)}" target="_blank">Ver página</a><a class="btn line" href="resultados.html?c=${L.id}&mes=${mesAnterior()}">📊 Resultados</a><a class="btn dark" href="editor.html?c=${L.id}" target="_blank">Editar vidriera</a></div></div>
+      <div class="row"><a class="btn line" href="./#/l/${esc(L.slug)}" target="_blank">Ver página</a><a class="btn line" href="resultados.html?c=${L.id}&mes=${mesAnterior()}">📊 Resultados</a><a class="btn line" href="carteles.html?c=${L.id}" target="_blank">🖨️ Carteles</a><a class="btn dark" href="editor.html?c=${L.id}" target="_blank">Editar vidriera</a></div></div>
     <div class="pasos">${pasos.map((p, i) => `<div class="paso ${p[2] ? 'hecho' : ''} ${i === ahora ? 'ahora' : ''}"><b>${i + 1}. ${p[0]}</b><span class="sub">${p[1]}</span></div>`).join('')}</div>
 
     <div class="ficha">
@@ -634,6 +637,100 @@ async function pMetricas() {
   document.querySelectorAll('[data-o]').forEach(t => t.onclick = () => { MET.orden = t.dataset.o; pMetricas(); });
 }
 
+// ---------- Piloto: lo que dicen vecinos y locales ----------
+const TIPOS_C = {problema: ['⚠️', 'Algo no anda', 'r'], idea: ['💡', 'Idea', 'y'], me_gusta: ['❤️', 'Le gusta', 'g']};
+let PIL = 'abiertos';
+async function pPiloto() {
+  cargando('piloto');
+  await datosBase();
+  let q = sb.from('comentarios_piloto').select('*').order('creado', {ascending: false}).limit(200);
+  if (PIL === 'abiertos') q = q.eq('resuelto', false);
+  const {data} = await q; const lista = data || [];
+  const ids = [...new Set(lista.map(c => c.perfil_id).filter(Boolean))];
+  const ps = ids.length ? (await sb.from('perfiles').select('id,nombre').in('id', ids)).data || [] : [];
+  const quien = id => ps.find(p => p.id === id)?.nombre || (id ? 'Cuenta sin nombre' : 'Sin cuenta');
+  const cuenta = t => lista.filter(c => c.tipo === t).length;
+  const activos = COMS.filter(c => c.estado === 'activo');
+  marco('piloto', `<h1>Prueba piloto</h1><p class="sub">Lo que dicen los vecinos y los locales mientras probamos. Anotá lo que cuesta, lo que no se usa y lo que piden.</p>
+    <div class="tiles">${Object.entries(TIPOS_C).map(([k, [ic, t]]) => `<div class="card tile"><b>${ic} ${cuenta(k)}</b><span>${t}${PIL === 'abiertos' ? ' (sin resolver)' : ''}</span></div>`).join('')}</div>
+    <div class="row" style="margin:16px 0 12px"><div class="seg"><button data-pil="abiertos" class="${PIL === 'abiertos' ? 'on' : ''}">Sin resolver</button><button data-pil="todos" class="${PIL === 'todos' ? 'on' : ''}">Todos</button></div></div>
+    <div class="card">${lista.map(c => `<div class="op" data-com="${c.id}"><div class="row" style="justify-content:space-between">
+        <div><span class="pill ${TIPOS_C[c.tipo][2]}">${TIPOS_C[c.tipo][0]} ${TIPOS_C[c.tipo][1]}</span> <b>${esc(quien(c.perfil_id))}</b>
+          <small class="sub">· ${c.desde === 'panel' ? 'desde el panel de ' + esc(nombreLocal(c.comercio_id)) : 'desde la app' + (c.pantalla ? ' (' + esc(c.pantalla) + ')' : '')}</small></div>
+        <small class="sub">${fechaHora(c.creado)}</small></div>
+      <p>${esc(c.texto)}</p>
+      ${c.resuelto ? `<p class="okmsg" style="margin:0">✓ Resuelto${c.nota ? ': ' + esc(c.nota) : ''}</p>`
+        : `<div class="row"><input class="buscar" data-nota placeholder="Nota (opcional): qué se hizo" style="max-width:none"><button class="btn ok sm" data-resolver>Marcar resuelto</button></div>`}</div>`).join('')
+      || '<div class="empty">No hay comentarios por ahora.</div>'}</div>
+    <h2>Carteles para los locales del piloto</h2>
+    <div class="card pad"><p class="sub">Un cartel con QR para la vidriera, uno para la puerta y uno chico para la caja. Se imprimen en A4.</p>
+      <div class="row" style="margin-top:10px">${activos.map(c => `<a class="btn line sm" href="carteles.html?c=${c.id}" target="_blank">🖨️ ${esc(c.nombre)}</a>`).join('') || '<span class="sub">No hay locales activos.</span>'}</div></div>
+    <h2>Lista para el piloto</h2>
+    <div class="card pad" style="line-height:1.7;font-size:14.5px">
+      1. Elegir 5 a 10 locales de rubros distintos (ropa, gastronomía, uno con turnos, una óptica).<br>
+      2. Darlos de alta en <a href="#/locales">Locales</a> y armar con cada dueño su vidriera y sus productos.<br>
+      3. Pegar los carteles en la vidriera y en la caja.<br>
+      4. Un mes de prueba: leer esta pantalla cada semana y mirar <a href="#/metricas">Métricas</a>.<br>
+      5. Con los números del piloto, decidir precios y reglas en <a href="#/ajustes">Ajustes</a>.</div>`);
+  document.querySelectorAll('[data-pil]').forEach(b => b.onclick = () => { PIL = b.dataset.pil; pPiloto(); });
+  document.querySelectorAll('[data-com]').forEach(box => {
+    const b = box.querySelector('[data-resolver]'); if (!b) return;
+    b.onclick = async () => {
+      const {error} = await sb.from('comentarios_piloto').update({resuelto: true, nota: box.querySelector('[data-nota]').value.trim() || null}).eq('id', +box.dataset.com);
+      if (error) return box.insertAdjacentHTML('beforeend', `<div class="err">${esc(errorTexto(error))}</div>`);
+      await contarPendientes(); pPiloto();
+    };
+  });
+}
+
+// ---------- Ajustes: lo que todavía no está decidido se cambia acá ----------
+async function pAjustes(msg = '') {
+  cargando('ajustes');
+  const [aj, bl] = await Promise.all([
+    sb.from('ajustes').select('*').order('clave'),
+    sb.from('bloque_tipos').select('codigo,nombre,grupo,plan_minimo').order('grupo')]);
+  await datosBase();
+  const ultimo = (aj.data || []).reduce((m, a) => a.actualizado > m ? a.actualizado : m, '');
+  marco('ajustes', `<h1>Ajustes</h1><p class="sub">Reglas que todavía no están decididas. Se pueden cambiar cuando quieras: la app las toma en el momento, sin tocar el código.</p>${msg}
+    <h2>Puntos y apartados</h2>
+    <div class="cols">${(aj.data || []).map(a => `<div class="card pad"><div class="field" style="margin:0"><label for="aj-${a.clave}">${esc(a.nombre)}</label>
+        <input id="aj-${a.clave}" data-aj="${a.clave}" type="number" step="any" min="${a.minimo}" max="${a.maximo}" value="${+a.valor}">
+        <small>${esc(a.ayuda || '')} Entre ${(+a.minimo).toLocaleString('es-AR')} y ${(+a.maximo).toLocaleString('es-AR')}.</small></div></div>`).join('')}</div>
+    <p class="sub" style="font-size:13px;margin-top:8px">${ultimo ? 'Último cambio: ' + fechaHora(ultimo) + '. ' : ''}Cada cambio queda en la auditoría. Los puntos ya sumados no cambian.</p>
+    <button class="btn main" id="aj-guardar" style="margin-top:10px">Guardar puntos y apartados</button>
+    <h2>Planes</h2>
+    <div class="card tw"><table><thead><tr><th>Plan</th><th>Precio por mes</th><th>Locales</th></tr></thead><tbody>
+      ${PLANES.map(p => `<tr><td><b>${esc(cap(p.nombre))}</b></td><td><input class="buscar" style="min-width:0;max-width:160px" type="number" min="0" step="500" data-plan="${p.id}" value="${+p.precio_mensual}"></td>
+        <td>${COMS.filter(c => c.plan_id === p.id).length}</td></tr>`).join('')}</tbody></table></div>
+    <p class="sub" style="font-size:13px;margin-top:8px">De prueba: con precio 0 no se cobra nada. Los precios solo se muestran al dar de alta y en las condiciones.</p>
+    <h2>Qué trae cada plan</h2>
+    <div class="card tw"><table><thead><tr><th>Bloque de la vidriera</th><th>Grupo</th><th>Desde el plan</th></tr></thead><tbody>
+      ${(bl.data || []).map(b => `<tr><td>${esc(b.nombre)}</td><td><small class="sub">${esc(b.grupo)}</small></td>
+        <td><select class="buscar" style="min-width:0;max-width:170px" data-bloque="${esc(b.codigo)}">${PLANES.map(p => `<option value="${p.id}" ${p.id === b.plan_minimo ? 'selected' : ''}>${esc(cap(p.nombre))}</option>`).join('')}</select></td></tr>`).join('')}</tbody></table></div>
+    <button class="btn main" id="pl-guardar" style="margin-top:12px">Guardar planes</button>`);
+  document.getElementById('aj-guardar').onclick = async () => {
+    for (const i of document.querySelectorAll('[data-aj]')) {
+      const a = (aj.data || []).find(x => x.clave === i.dataset.aj); if (+i.value === +a.valor) continue;
+      const {error} = await sb.from('ajustes').update({valor: +i.value}).eq('clave', a.clave);
+      if (error) return pAjustes(`<div class="err">${esc(a.nombre)}: ${/check/.test(error.message) ? 'ese valor está fuera del rango permitido.' : esc(errorTexto(error))}</div>`);
+    }
+    pAjustes('<div class="okmsg">✓ Guardado. La app ya usa los valores nuevos.</div>');
+  };
+  document.getElementById('pl-guardar').onclick = async () => {
+    for (const i of document.querySelectorAll('[data-plan]')) {
+      const p = PLANES.find(x => x.id === +i.dataset.plan); if (+i.value === +p.precio_mensual) continue;
+      const {error} = await sb.from('planes').update({precio_mensual: +i.value || 0}).eq('id', p.id);
+      if (error) return pAjustes(`<div class="err">${esc(errorTexto(error))}</div>`);
+    }
+    for (const s of document.querySelectorAll('[data-bloque]')) {
+      const b = (bl.data || []).find(x => x.codigo === s.dataset.bloque); if (+s.value === b.plan_minimo) continue;
+      const {error} = await sb.from('bloque_tipos').update({plan_minimo: +s.value}).eq('codigo', b.codigo);
+      if (error) return pAjustes(`<div class="err">${esc(errorTexto(error))}</div>`);
+    }
+    pAjustes('<div class="okmsg">✓ Planes guardados.</div>');
+  };
+}
+
 // ---------- Estado del sistema (plan gratis) ----------
 async function pSistema() {
   cargando('sistema');
@@ -736,6 +833,8 @@ async function ruta() {
     else if (h[0] === 'abonos') await pAbonos();
     else if (h[0] === 'metricas') await pMetricas();
     else if (h[0] === 'sistema') await pSistema();
+    else if (h[0] === 'piloto') await pPiloto();
+    else if (h[0] === 'ajustes') await pAjustes();
     else if (h[0] === 'auditoria') await pAuditoria(h[1]);
     else await pInicio();
   } catch (e) {
