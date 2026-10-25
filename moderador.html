@@ -85,6 +85,9 @@ tr.click{cursor:pointer}tr.click:hover td{background:#FBFAF7}
 .est{color:#E8A317;letter-spacing:1px}
 .hor{display:grid;grid-template-columns:92px 1fr 1fr 1fr 1fr;gap:6px;align-items:center;font-size:13.5px;margin-top:4px}
 .hor input{border:1px solid var(--line);border-radius:8px;padding:6px 6px;font-size:13.5px;width:100%}
+.barra{height:10px;border-radius:99px;background:#F1EFE8;overflow:hidden;margin:8px 0 4px}
+.barra i{display:block;height:100%;border-radius:99px;background:var(--ok)}
+.barra i.y{background:#EF9F27}.barra i.r{background:var(--bad)}
 .aud td small{color:var(--mute)}
 .aud td:first-child{white-space:nowrap}
 .aud .det{font-size:13px;color:#4A4945;max-width:420px;word-break:break-word}
@@ -167,6 +170,7 @@ function marco(sec, html) {
         <a href="#/abonos" class="${sec === 'abonos' ? 'on' : ''}"><i>💳</i>Abonos</a>
         <a href="#/metricas" class="${sec === 'metricas' ? 'on' : ''}"><i>📈</i>Métricas</a>
         <a href="#/auditoria" class="${sec === 'auditoria' ? 'on' : ''}"><i>📋</i>Auditoría</a>
+        <a href="#/sistema" class="${sec === 'sistema' ? 'on' : ''}"><i>🛠️</i>Sistema</a>
       </nav><main>${html}</main></div>`;
 }
 const cargando = sec => marco(sec, '<div class="loading">Cargando…</div>');
@@ -630,6 +634,42 @@ async function pMetricas() {
   document.querySelectorAll('[data-o]').forEach(t => t.onclick = () => { MET.orden = t.dataset.o; pMetricas(); });
 }
 
+// ---------- Estado del sistema (plan gratis) ----------
+async function pSistema() {
+  cargando('sistema');
+  const {data: e, error} = await sb.rpc('estado_sistema');
+  if (error) { marco('sistema', `<div class="err">${esc(errorTexto(error))}</div>`); return; }
+  const n = v => Number(v || 0).toLocaleString('es-AR', {maximumFractionDigits: 1});
+  const uso = (v, max, txt, unidad) => { const p = Math.min(100, (+v || 0) / max * 100);
+    return `<div class="card pad"><b>${txt}</b><div class="barra"><i class="${p > 85 ? 'r' : p > 60 ? 'y' : ''}" style="width:${Math.max(p, 1)}%"></i></div>
+      <span class="sub">${n(v)} ${unidad} de ${n(max)} ${unidad} · ${p < 1 ? 'menos del 1' : Math.round(p)}% usado</span></div>`; };
+  const r = e.ultimo_respaldo, horas = r ? (Date.now() - new Date(r.creado)) / 36e5 : null;
+  marco('sistema', `<h1>Sistema</h1><p class="sub">Cuánto se usa del plan gratis de Supabase y si los respaldos y las tareas automáticas andan bien.</p>
+    <div class="cols" style="margin-top:16px">
+      ${uso(e.base_mb, e.limites.base_mb, 'Base de datos', 'MB')}
+      ${uso(e.archivos_mb, e.limites.archivos_mb, 'Fotos, videos y documentos', 'MB')}
+      ${uso(e.activos_mes, e.limites.usuarios_mes, 'Vecinos activos este mes', 'personas')}
+      <div class="card pad"><b>Último respaldo</b>
+        ${r ? `<p style="margin-top:8px">${r.ok ? '✅' : '❌'} ${fechaHora(r.creado)} · ${n(r.bytes / 1048576)} MB · ${r.tablas || '?'} tablas</p>
+          <p class="sub" style="margin-top:4px">${horas > 36 ? '⚠ Hace más de un día y medio que no hay respaldo: revisá GitHub Actions.' : `${e.respaldos_30d} respaldos en los últimos 30 días.`}</p>`
+        : '<p class="hint m" style="margin-top:8px">Todavía no hay respaldos. Seguí los pasos de “Respaldos” en el LEEME para activarlos (es gratis).</p>'}</div>
+    </div>
+    <h2>Movimiento</h2>
+    <div class="tiles">
+      <div class="card tile"><b>${n(e.locales)}</b><span>locales activos</span></div>
+      <div class="card tile"><b>${n(e.cuentas)}</b><span>cuentas · ${n(e.cuentas_semana)} esta semana</span></div>
+      <div class="card tile"><b>${n(e.avisos_semana)}</b><span>avisos enviados en 7 días</span></div>
+      ${e.codigos_24h !== null ? `<div class="card tile"><b>${n(e.codigos_24h)}</b><span>códigos de acceso en 24 h (de prueba, sin SMS)</span></div>` : ''}
+    </div>
+    <h2>Tareas automáticas</h2>
+    <div class="card tw">${(e.tareas || []).length ? `<table><thead><tr><th>Tarea</th><th>Cuándo (UTC)</th><th>Última vez</th><th>Fallas en 7 días</th></tr></thead><tbody>
+      ${e.tareas.map(t => `<tr><td><code>${esc(t.nombre)}</code></td><td><code>${esc(t.cuando)}</code></td>
+        <td>${t.fecha ? `${t.ultimo === 'succeeded' ? '✅' : t.ultimo === 'failed' ? '❌' : '⏳'} ${fechaHora(t.fecha)}` : '<span class="sub">todavía no corrió</span>'}</td>
+        <td>${+t.fallas ? `<span class="pill r">${t.fallas}</span>` : '<span class="pill g">0</span>'}</td></tr>`).join('')}</tbody></table>`
+      : '<div class="empty">No se pudo leer el estado de las tareas.</div>'}</div>
+    <p class="sub" style="font-size:13px;margin-top:12px">Ojo: en el plan gratis, Supabase pausa el proyecto si pasa una semana sin uso. El respaldo diario de GitHub lo mantiene despierto.</p>`);
+}
+
 // ---------- Auditoría ----------
 const TABLAS = {comercios: 'Datos del local', comercio_usuarios: 'Equipo', horarios: 'Horarios', comercio_estilo: 'Estilo de la vidriera',
   comercio_intro: 'Intro', comercio_bloques: 'Bloques', vidriera_versiones: 'Versión de la vidriera', productos: 'Producto', variantes: 'Stock',
@@ -695,6 +735,7 @@ async function ruta() {
     else if (h[0] === 'opiniones') await pOpiniones(h[1] === 'reportes' ? 'reportes' : 'pendientes');
     else if (h[0] === 'abonos') await pAbonos();
     else if (h[0] === 'metricas') await pMetricas();
+    else if (h[0] === 'sistema') await pSistema();
     else if (h[0] === 'auditoria') await pAuditoria(h[1]);
     else await pInicio();
   } catch (e) {

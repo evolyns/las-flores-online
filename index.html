@@ -473,7 +473,8 @@ async function pPerfil(msg = '') {
     $app.innerHTML = barra() + `<main class="wrap"><h1>Tu cuenta</h1>
       <p class="sub">Mirar, buscar y consultar no necesita cuenta. Con tu celular sumás puntos en los locales, apartás y seguís a los que te gustan.</p>
       ${!telPendiente ? `<form id="f1"><div class="field"><label for="tel">Tu celular</label><input id="tel" type="tel" inputmode="numeric" placeholder="11 2345 6789" autocomplete="tel"></div>
-        <button class="btn main block">Mandarme el código</button></form>`
+        <button class="btn main block">Mandarme el código</button>
+        <p class="sub" style="font-size:13px;margin-top:10px">Al entrar aceptás las <a href="legal.html#vecinos">condiciones de uso</a> y la <a href="legal.html#privacidad">política de privacidad</a>. Los locales nunca ven tu número.</p></form>`
       : `<form id="f2"><p style="margin-top:14px">Te mandamos un código al <b>+${esc(telPendiente)}</b>.</p>
         <div class="field"><label for="cod">Código de 6 números</label><input id="cod" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="••••••"></div>
         <button class="btn main block">Entrar</button><p style="margin-top:12px"><a href="#" id="otro">Usar otro número</a></p></form>`}
@@ -514,7 +515,8 @@ async function pPerfil(msg = '') {
     ${perfil?.es_moderador ? '<a class="btn dark block" style="margin-top:10px" href="moderador.html">Panel del moderador</a>' : ''}
     <h2>Locales que seguís</h2><div class="locs">${(sigo || []).map(s => D.porId[s.comercio_id]).filter(Boolean).map(tarjetaLocal).join('') || '<div class="card empty">Todavía no seguís ningún local. Entrá a uno y tocá “Seguir”.</div>'}</div>
     <h2>Intros de los locales</h2><div class="card" style="padding:12px 14px"><label class="row" style="justify-content:space-between"><span>Mostrar la presentación al entrar a un local</span><input type="checkbox" id="intros" ${prefIntros() ? 'checked' : ''}></label></div>
-    <button class="btn line block" id="salir" style="margin-top:22px">Salir de mi cuenta</button></main>`;
+    <button class="btn line block" id="salir" style="margin-top:22px">Salir de mi cuenta</button>
+    <p class="sub" style="text-align:center;font-size:13px;margin-top:16px"><a href="legal.html#privacidad">Privacidad</a> · <a href="legal.html#vecinos">Condiciones de uso</a></p></main>`;
   dibujarQR(uid);
   document.getElementById('intros').onchange = e => { try { localStorage.setItem('lf-intros', e.target.checked ? 'si' : 'no'); } catch (_) {} };
   document.getElementById('salir').onclick = async () => { await sb.auth.signOut(); SESION = null; pPerfil(); };
