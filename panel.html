@@ -375,7 +375,8 @@ async function pMas(msg = '') {
     ${YO.rol === 'duenio' ? `<h2>Tu equipo</h2><div class="card pad"><p class="sub">${(eq.data || []).length} persona(s) con acceso.${(inv.data || []).length ? ' Invitaciones pendientes: ' + inv.data.map(i => '+' + esc(i.telefono)).join(', ') : ''}</p>
       <div class="field"><label for="itel">Invitar a un empleado por su celular</label><input id="itel" inputmode="numeric" placeholder="11 2345 6789"></div>
       <button class="btn line block" id="invitar">Invitar</button><p class="sub" style="margin-top:8px">Cuando entre a la app con ese número, va a ver este panel. Por defecto puede usar la caja, el stock, los apartados y lo en vivo, pero no cambiar precios.</p></div>` : ''}
-    <a class="btn line block" style="margin-top:22px" href="./">Ir a la app de vecinos</a>`);
+    ${YO.rol === 'duenio' ? '<a class="btn dark block" style="margin-top:22px" href="editor.html">Editar mi vidriera (mejor en la computadora)</a>' : ''}
+    <a class="btn line block" style="margin-top:10px" href="./">Ir a la app de vecinos</a>`);
   document.querySelectorAll('[data-sem]').forEach(b => b.onclick = async () => {
     const fila = {comercio_id: L.id, tipo: 'mesas', estado: b.dataset.sem, actualizado_por: S.user.id, actualizado: new Date().toISOString(), vence: new Date(Date.now() + 36e5).toISOString()};
     const q = m ? sb.from('estados_en_vivo').update(fila).eq('id', m.id) : sb.from('estados_en_vivo').insert(fila);

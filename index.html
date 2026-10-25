@@ -164,6 +164,18 @@ const SUPABASE_URL = 'https://jvqunkkiypbvypgumxql.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_r1mug-RwM_3RCSoUQ6lo0Q_KiHiSHlZ';
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
 const MODO_PRUEBA = true;   // muestra el aviso de "locales de ejemplo"
+// Vista previa del editor de vidriera: recibe el borrador por mensaje y lo dibuja sin publicarlo
+const EN_PREVIA = window.top !== window;
+const PREVIEW = {};
+let forzarIntro = false;
+window.addEventListener('message', ev => {
+  if (ev.origin !== location.origin) return;
+  if (ev.data?.tipo === 'lf-preview') PREVIEW[ev.data.comercio_id] = ev.data.contenido;
+  else if (ev.data?.tipo === 'lf-intro') forzarIntro = true;
+  else return;
+  const m = location.hash.match(/^#\/l\/(.+)$/);
+  if (D.listo && m) pLocal(decodeURIComponent(m[1]));
+});
 
 // ---------- Utilidades ----------
 const $app = document.getElementById('app');
@@ -454,7 +466,7 @@ async function pLocal(slug) {
   marcarTab('');
   const c = D.comercios.find(x => x.slug === slug);
   if (!c) { $app.innerHTML = barra('Las Flores', 'online', true) + '<div class="empty">No encontramos ese local.</div>'; return; }
-  const v = D.vidrieras[c.id]?.contenido || {};
+  const v = PREVIEW[c.id] || D.vidrieras[c.id]?.contenido || {};
   const e = v.estilo || {}; const intro = v.intro || {};
   const [fam, , modo] = usarFuente(e.tipografia);
   const oscuro = e.fondo === 'oscuro', deColor = e.fondo === 'color';
@@ -467,8 +479,8 @@ async function pLocal(slug) {
 
   $app.innerHTML = barra(c.nombre, 'en Las Flores', true) + `<div class="tienda" id="tienda" style="--a:${esc(e.color)};--fondo:${fondo};--tinta:${tinta};--suave:${suave};--rad:${rad};--fn:${fam},serif">
     <div class="loading">Cargando ${esc(c.nombre)}…</div></div>`;
-  registrar(c.id, 'vista');
-  if (intro.tipo && intro.tipo !== 'ninguna' && prefIntros() && !sessionStorageGet('intro-' + c.id)) mostrarIntro(c, intro, e, fam, modo, fondo, tinta);
+  if (!EN_PREVIA) registrar(c.id, 'vista');
+  if (intro.tipo && intro.tipo !== 'ninguna' && (forzarIntro || (!EN_PREVIA && prefIntros() && !sessionStorageGet('intro-' + c.id)))) { forzarIntro = false; mostrarIntro(c, intro, e, fam, modo, fondo, tinta); }
 
   const [prods, servs, ops, hist, sigo] = await Promise.all([
     sb.from('productos').select('id,nombre,descripcion,precio,precio_efectivo,destacado,variantes(id,talle,color,stock),fotos(url,orden)').eq('comercio_id', c.id).order('destacado', {ascending: false}).order('precio', {ascending: false}),

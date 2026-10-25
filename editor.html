@@ -1,0 +1,357 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Editor de vidriera · Las Flores online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--o:#E8711D;--o2:#FCE6D3;--ink:#2C2C2A;--mute:#77756F;--line:#E8E4DC;--bg:#EDEAE4;--ok:#1D9E75;--warn:#B4780A}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;background:var(--bg);color:var(--ink);font-family:Inter,system-ui,sans-serif;font-size:14.5px}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select,textarea{font:inherit}
+a{color:inherit}
+[hidden]{display:none!important}
+.app{display:grid;grid-template-rows:56px 1fr;height:100vh}
+.bar{background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px;padding:0 16px}
+.bar .lf{width:30px;height:30px;border-radius:9px;background:var(--o);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center}
+.bar b{font-size:15.5px}
+.bar select{border:1px solid var(--line);border-radius:8px;padding:5px 8px;background:#fff}
+.seg2{display:flex;background:#F4F2EE;border-radius:10px;padding:3px;margin-left:12px}
+.seg2 button{padding:6px 12px;border-radius:8px;font-weight:600;font-size:13.5px;color:var(--mute)}
+.seg2 button.on{background:#fff;color:var(--ink);box-shadow:0 1px 2px rgba(0,0,0,.08)}
+.sp{flex:1}
+.estado{color:var(--mute);font-size:13px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;border-radius:10px;padding:9px 14px;font-weight:600;text-decoration:none}
+.btn.main{background:var(--o);color:#fff}.btn.line{border:1px solid var(--line);background:#fff}.btn.dark{background:var(--ink);color:#fff}
+.btn.sm{padding:6px 10px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.5}
+.cols{display:grid;grid-template-columns:84px 360px 1fr 320px;min-height:0}
+.rail{background:#fff;border-right:1px solid var(--line);display:flex;flex-direction:column;gap:2px;padding:10px 6px;overflow:auto}
+.rail button{display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 2px;border-radius:12px;font-size:11.5px;color:var(--mute)}
+.rail button span{font-size:19px;line-height:1}
+.rail button.on{background:var(--o2);color:var(--o);font-weight:600}
+.panel{background:#fff;border-right:1px solid var(--line);overflow:auto;padding:18px 18px 40px}
+.panel h2{font-size:17px;margin-bottom:2px}
+.panel h3{font-size:12px;font-weight:600;color:var(--mute);text-transform:uppercase;letter-spacing:.4px;margin:20px 0 8px}
+.sub{color:var(--mute);font-size:13px}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.opt{border:1px solid var(--line);border-radius:12px;padding:10px;text-align:left;background:#fff;position:relative}
+.opt.on{border:2px solid var(--o);padding:9px}
+.opt b{display:block;font-size:13.5px}.opt small{color:var(--mute);font-size:12px}
+.font{font-size:22px;line-height:1.1;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.colores{display:flex;flex-wrap:wrap;gap:8px}
+.colores button{width:34px;height:34px;border-radius:50%;border:3px solid #fff;box-shadow:0 0 0 1px var(--line)}
+.colores button.on{box-shadow:0 0 0 2px var(--o)}
+.colores label{width:34px;height:34px;border-radius:50%;border:1px dashed var(--mute);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;position:relative}
+.colores label input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.tex{height:44px;border-radius:8px;border:1px solid var(--line);margin-bottom:6px}
+.bl{display:flex;align-items:center;gap:8px;border:1px solid var(--line);border-radius:12px;padding:8px 10px;margin-bottom:6px;background:#fff}
+.bl.sel{border:2px solid var(--o);padding:7px 9px}
+.bl.off{opacity:.55}
+.bl .n{flex:1;min-width:0}.bl .n b{display:block;font-size:13.5px}.bl .n small{color:var(--mute);font-size:12px}
+.bl .mv{display:flex;flex-direction:column}
+.bl .mv button{font-size:11px;line-height:1;padding:2px 5px;color:var(--mute)}
+.sw{width:36px;height:20px;border-radius:99px;background:#D7D3CB;position:relative;flex:none}
+.sw::after{content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:#fff;transition:.15s}
+.sw.on{background:var(--ok)}.sw.on::after{left:18px}
+.lib{display:flex;flex-wrap:wrap;gap:6px}
+.lib button{border:1px solid var(--line);border-radius:99px;padding:6px 10px;font-size:12.5px;background:#fff}
+.lib button small{color:var(--warn);font-weight:600}
+.field{display:flex;flex-direction:column;gap:5px;margin:10px 0}
+.field label{font-size:12.5px;font-weight:600}
+.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:10px;padding:9px 11px;background:#fff;outline:none;width:100%}
+.centro{display:flex;align-items:flex-start;justify-content:center;overflow:auto;padding:24px}
+.tel{width:390px;height:780px;border-radius:44px;border:12px solid #1F1F1E;background:#fff;overflow:hidden;box-shadow:0 20px 50px rgba(0,0,0,.18);flex:none}
+.tel.compu{width:100%;max-width:1100px;height:calc(100vh - 110px);border-radius:12px;border:1px solid var(--line)}
+.tel iframe{width:100%;height:100%;border:0}
+.der{background:#fff;border-left:1px solid var(--line);overflow:auto;padding:18px}
+.der h3{font-size:12px;font-weight:600;color:var(--mute);text-transform:uppercase;letter-spacing:.4px;margin:4px 0 10px}
+.chk{border-radius:12px;padding:12px;margin-bottom:10px;font-size:13.5px;line-height:1.45}
+.chk.ok{background:#E1F5EE;color:#0F5C46}.chk.w{background:#FFF4D6;color:#6B4A00}.chk.bad{background:#FCEBE6;color:#8E2F14}
+.chk b{display:block;margin-bottom:2px}
+.fijo{background:#F4F2EE;border-radius:12px;padding:12px;font-size:13px;color:var(--mute);line-height:1.6}
+.ver{border-left:3px solid var(--line);padding:4px 0 10px 12px;position:relative}
+.ver::before{content:"";position:absolute;left:-7px;top:7px;width:11px;height:11px;border-radius:50%;background:var(--line)}
+.ver.pub::before{background:var(--ok)}.ver.prog::before{background:var(--o)}
+.ver b{display:block;font-size:13.5px}.ver small{color:var(--mute);font-size:12px}
+.err{background:#FCEBE6;color:#8E2F14;border-radius:10px;padding:9px 11px;font-size:13px;margin-top:8px}
+.okmsg{background:#E1F5EE;color:#0F5C46;border-radius:10px;padding:9px 11px;font-size:13px;margin-top:8px}
+.centrado{display:flex;align-items:center;justify-content:center;height:100vh;padding:24px;text-align:center}
+.centrado .box{background:#fff;border-radius:18px;padding:28px;max-width:460px}
+@media (max-width:1100px){.cols{grid-template-columns:72px 320px 1fr}.der{display:none}}
+</style>
+</head>
+<body>
+<div id="app"><div class="centrado"><div class="box">Cargando el editor…</div></div></div>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
+const sb = createClient('https://jvqunkkiypbvypgumxql.supabase.co', 'sb_publishable_r1mug-RwM_3RCSoUQ6lo0Q_KiHiSHlZ');
+const $app = document.getElementById('app');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const errorTexto = e => (e?.message || String(e)).replace(/^.*?: /, '');
+
+// ---------- Opciones (las mismas que valida la base) ----------
+const ESTILOS = [['Boutique','Fino, mucho aire'],['Clásico','Serio y prolijo'],['Moderno','Limpio y directo'],['Natural','Cálido, de barrio'],
+  ['Divertido','Colorido y redondo'],['Urbano','Fuerte, en mayúsculas'],['Vintage','Con historia'],['Minimal','Solo lo justo']];
+const PRESET = {Boutique: {tipografia: 'elegante', cabecera: 'firma', bordes: 'redondeados', tarjeta: 'lookbook'}, 'Clásico': {tipografia: 'tradicion', cabecera: 'escudo', bordes: 'rectos', tarjeta: 'lista'},
+  Moderno: {tipografia: 'moderna', cabecera: 'portada', bordes: 'rectos', tarjeta: 'grilla'}, Natural: {tipografia: 'tradicion', cabecera: 'portada', bordes: 'redondeados', tarjeta: 'grilla', textura: 'papel'},
+  Divertido: {tipografia: 'redonda', cabecera: 'portada', bordes: 'redondeados', tarjeta: 'grilla', textura: 'puntos'}, Urbano: {tipografia: 'urbana', cabecera: 'cartel', bordes: 'rectos', tarjeta: 'mosaico'},
+  Vintage: {tipografia: 'libro', cabecera: 'escudo', bordes: 'suaves', tarjeta: 'lista', textura: 'papel'}, Minimal: {tipografia: 'editorial', cabecera: 'firma', bordes: 'rectos', tarjeta: 'grilla', textura: 'lisa'}};
+const FUENTES = [['elegante','Elegante',"'Playfair Display'",'Playfair+Display:ital,wght@1,600','italic'],['tradicion','Tradición',"'Lora'",'Lora:wght@600'],
+  ['moderna','Moderna',"'Montserrat'",'Montserrat:wght@700','upper'],['urbana','Urbana',"'Oswald'",'Oswald:wght@600','upper'],['editorial','Editorial',"'Fraunces'",'Fraunces:wght@600'],
+  ['redonda','Redonda',"'Poppins'",'Poppins:wght@600'],['libro','Libro',"'Libre Baskerville'",'Libre+Baskerville:wght@700'],['romana','Romana',"'Cinzel'",'Cinzel:wght@600','upper'],
+  ['escolar','Escolar',"'Andika'",'Andika:wght@700'],['maquina','Máquina',"'Courier Prime'",'Courier+Prime:wght@700']];
+const PALETA = ['#8C2F45','#24513C','#1D4E89','#B5532A','#5B3A8C','#111111','#8C3B5A','#0F6E56','#B5560F','#7A5A00','#3D5A6C','#A23B2A'];
+const CABECERAS = [['escudo','Escudo','Inicial en un círculo'],['portada','Portada','Banda con fotos'],['firma','Firma','Nombre con subrayado'],['cartel','Cartel','Banda oscura, mayúsculas']];
+const TARJETAS = [['grilla','Grilla','2 por fila'],['lista','Lista','Uno abajo del otro'],['mosaico','Mosaico','3 por fila, solo fotos'],['lookbook','Lookbook','Fotos grandes']];
+const TEXTURAS = ['lisa','papel','rayas','puntos','logo'];
+const INTROS = [['ninguna','Sin intro'],['logo','Logo'],['frase','Frase'],['persiana','Persiana'],['telon','Telón'],['video','Video']];
+
+// ---------- Estado ----------
+let S, LOCALES = [], L, E = {}, I = {}, B = [], TIPOS = [], OTROS = [], VERS = [], seccion = 'estilo', sel = null, vista = 'cel', guardando = null, msgDer = '';
+const cargadas = new Set();
+function fuente(k) {
+  const f = FUENTES.find(x => x[0] === k) || FUENTES[1];
+  if (!cargadas.has(k)) { cargadas.add(k); const l = document.createElement('link'); l.rel = 'stylesheet'; l.href = `https://fonts.googleapis.com/css2?family=${f[3]}&display=swap`; document.head.appendChild(l); }
+  return f;
+}
+FUENTES.forEach(f => fuente(f[0]));
+
+// Contraste con letra blanca (misma cuenta que la base)
+const canal = h => { const v = parseInt(h, 16) / 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); };
+const contraste = hex => 1.05 / (0.2126 * canal(hex.slice(1, 3)) + 0.7152 * canal(hex.slice(3, 5)) + 0.0722 * canal(hex.slice(5, 7)) + 0.05);
+function oscurecer(hex) { let h = hex; for (let i = 0; i < 20 && contraste(h) < 3; i++) h = '#' + [1, 3, 5].map(j => Math.round(parseInt(h.slice(j, j + 2), 16) * .9).toString(16).padStart(2, '0')).join(''); return h; }
+const distancia = (a, b) => Math.sqrt([1, 3, 5].reduce((s, j) => s + (parseInt(a.slice(j, j + 2), 16) - parseInt(b.slice(j, j + 2), 16)) ** 2, 0));
+
+// ---------- Entrar ----------
+async function iniciar() {
+  const {data: {session}} = await sb.auth.getSession(); S = session;
+  if (!S) { $app.innerHTML = `<div class="centrado"><div class="box"><h2>Editor de vidriera</h2><p class="sub" style="margin:8px 0 16px">Entrá primero con tu celular en la app. El editor es para el dueño del local.</p><a class="btn main" href="./#/perfil">Entrar</a></div></div>`; return false; }
+  const {data} = await sb.from('comercio_usuarios').select('rol, comercios(id,nombre,slug,plan_id,rubros(nombre))').eq('usuario_id', S.user.id);
+  LOCALES = (data || []).filter(r => r.comercios && r.rol === 'duenio').map(r => r.comercios);
+  if (!LOCALES.length) { $app.innerHTML = `<div class="centrado"><div class="box"><h2>Solo para dueños</h2><p class="sub" style="margin:8px 0 16px">La vidriera la cambia el dueño del local. Si trabajás en uno, pedile que la edite desde su cuenta.</p><a class="btn line" href="panel.html">Volver al panel</a></div></div>`; return false; }
+  const [t, o] = await Promise.all([sb.from('bloque_tipos').select('*'), sb.from('vidriera_publicada').select('comercio_id,slug,contenido')]);
+  TIPOS = t.data || []; OTROS = o.data || [];
+  let g; try { g = +localStorage.getItem('lf-panel-local'); } catch (_) {}
+  await abrir(LOCALES.find(x => x.id === g)?.id || LOCALES[0].id);
+  return true;
+}
+async function abrir(id) {
+  L = LOCALES.find(x => x.id === id);
+  const [e, i, b, v] = await Promise.all([
+    sb.from('comercio_estilo').select('*').eq('comercio_id', id).maybeSingle(),
+    sb.from('comercio_intro').select('*').eq('comercio_id', id).maybeSingle(),
+    sb.from('comercio_bloques').select('*').eq('comercio_id', id).order('orden'),
+    sb.from('vidriera_versiones').select('id,numero,nombre,estado,creado,publicar_en,publicada_en').eq('comercio_id', id).order('numero', {ascending: false})]);
+  E = e.data || {comercio_id: id, estilo_base: 'Clásico', color: '#E8711D', fondo: 'claro', textura: 'lisa', tipografia: 'tradicion', cabecera: 'escudo', cabecera_variante: 1, cabecera_alineacion: 'izquierda', tarjeta: 'grilla', bordes: 'rectos'};
+  I = i.data || {comercio_id: id, tipo: 'ninguna', duracion_ms: 2500, texto: null, media_url: null, mostrar_en_portal: true, usar_en_promo: false};
+  B = b.data || []; VERS = v.data || [];
+  if (!e.data) await sb.from('comercio_estilo').insert(E);
+  pintar();
+}
+
+// ---------- Vista previa: manda el borrador a la página real del local ----------
+function contenido() {
+  const sinId = x => { const o = {...x}; delete o.comercio_id; return o; };
+  return {estilo: sinId(E), intro: sinId(I), bloques: B.filter(b => b.activo).sort((a, b) => a.orden - b.orden).map(b => { const o = sinId(b); delete o.id; return o; })};
+}
+function previa() {
+  const f = document.getElementById('prev');
+  if (f && f.contentWindow) f.contentWindow.postMessage({tipo: 'lf-preview', comercio_id: L.id, contenido: contenido()}, location.origin);
+}
+function guardar(tabla) {
+  document.getElementById('estado').textContent = 'Guardando borrador…';
+  clearTimeout(guardando);
+  guardando = setTimeout(async () => {
+    let r;
+    if (tabla === 'estilo') { const {comercio_id, ...resto} = E; r = await sb.from('comercio_estilo').update(resto).eq('comercio_id', L.id); }
+    if (tabla === 'intro') r = await sb.from('comercio_intro').upsert(I);
+    const st = document.getElementById('estado');
+    if (r?.error) { st.textContent = 'No se guardó: ' + errorTexto(r.error); st.style.color = '#8E2F14'; }
+    else { st.textContent = 'Borrador guardado · ' + new Date().toLocaleTimeString('es-AR', {hour: '2-digit', minute: '2-digit'}); st.style.color = ''; }
+  }, 600);
+}
+function cambiar(campos, tabla = 'estilo') {
+  Object.assign(tabla === 'estilo' ? E : I, campos);
+  pintarPanel(); pintarDer(); previa(); guardar(tabla);
+}
+
+// ---------- Pantalla ----------
+const SECC = [['estilo','✦','Estilo'],['colores','●','Colores'],['letras','Aa','Letras'],['cabecera','▭','Cabecera'],['fondo','▦','Fondo'],
+  ['tarjetas','▤','Tarjetas'],['bloques','⧉','Bloques'],['intro','▶','Intro'],['versiones','↺','Versiones']];
+function pintar() {
+  $app.innerHTML = `<div class="app">
+    <div class="bar"><span class="lf">LF</span><b>${esc(L.nombre)} · Editor de vidriera</b>
+      ${LOCALES.length > 1 ? `<select id="loc">${LOCALES.map(x => `<option value="${x.id}" ${x.id === L.id ? 'selected' : ''}>${esc(x.nombre)}</option>`).join('')}</select>` : ''}
+      <div class="seg2"><button data-vista="cel" class="${vista === 'cel' ? 'on' : ''}">📱 Celular</button><button data-vista="compu" class="${vista === 'compu' ? 'on' : ''}">🖥 Computadora</button></div>
+      <span class="sp"></span><span class="estado" id="estado">Los cambios se guardan solos como borrador</span>
+      <a class="btn line" href="panel.html">Panel</a><a class="btn line" href="./#/l/${esc(L.slug)}" target="_blank">Ver publicada</a><button class="btn main" id="publicar">Publicar</button></div>
+    <div class="cols"><div class="rail">${SECC.map(([k, ic, t]) => `<button data-sec="${k}" class="${seccion === k ? 'on' : ''}"><span>${ic}</span>${t}</button>`).join('')}</div>
+      <div class="panel" id="panel"></div>
+      <div class="centro"><div class="tel ${vista === 'compu' ? 'compu' : ''}"><iframe id="prev" src="index.html?vista=previa#/l/${esc(L.slug)}" title="Vista previa"></iframe></div></div>
+      <div class="der" id="der"></div></div></div>`;
+  document.querySelectorAll('[data-sec]').forEach(b => b.onclick = () => { seccion = b.dataset.sec; document.querySelectorAll('[data-sec]').forEach(x => x.classList.toggle('on', x === b)); pintarPanel(); });
+  document.querySelectorAll('[data-vista]').forEach(b => b.onclick = () => { vista = b.dataset.vista; pintar(); });
+  const ls = document.getElementById('loc'); if (ls) ls.onchange = () => abrir(+ls.value);
+  document.getElementById('publicar').onclick = () => { seccion = 'versiones'; pintarPanel(); document.querySelectorAll('[data-sec]').forEach(x => x.classList.toggle('on', x.dataset.sec === 'versiones')); };
+  document.getElementById('prev').onload = () => setTimeout(previa, 1200);
+  pintarPanel(); pintarDer();
+}
+function opciones(lista, actual, campo, extra = () => '') {
+  return lista.map(([k, t, d]) => `<button class="opt ${actual === k ? 'on' : ''}" data-set="${campo}" data-val="${esc(k)}">${extra(k)}<b>${esc(t)}</b>${d ? `<small>${esc(d)}</small>` : ''}</button>`).join('');
+}
+function pintarPanel() {
+  const P = document.getElementById('panel'); if (!P) return;
+  const h = {
+    estilo: () => `<h2>Estilo</h2><p class="sub">Un punto de partida. Después cambiás lo que quieras.</p><h3>Estilo base</h3>
+      <div class="grid2">${opciones(ESTILOS.map(([k, d]) => [k, k, d]), E.estilo_base, 'estilo_base')}</div>`,
+    colores: () => `<h2>Colores</h2><p class="sub">El color de tu local: nombre, botones y promos.</p><h3>Paleta</h3>
+      <div class="colores">${PALETA.map(c => `<button style="background:${c}" data-set="color" data-val="${c}" class="${E.color === c ? 'on' : ''}" title="${c}"></button>`).join('')}
+      <label title="Elegir otro">＋<input type="color" id="otro" value="${esc(E.color)}"></label></div>
+      <h3>Elegido</h3><div style="display:flex;gap:10px;align-items:center"><span style="width:44px;height:44px;border-radius:12px;background:${esc(E.color)}"></span><b>${esc(E.color)}</b></div>`,
+    letras: () => `<h2>Letras</h2><p class="sub">La letra del nombre del local y los títulos.</p><h3>10 tipografías</h3>
+      <div class="grid2">${FUENTES.map(([k, t, fam, , modo]) => `<button class="opt ${E.tipografia === k ? 'on' : ''}" data-set="tipografia" data-val="${k}"><span class="font" style="font-family:${fam},serif;${modo === 'italic' ? 'font-style:italic' : ''}">${esc(modo === 'upper' ? L.nombre.toUpperCase() : L.nombre)}</span><small>${t}</small></button>`).join('')}</div>`,
+    cabecera: () => `<h2>Cabecera</h2><p class="sub">Lo primero que se ve de tu página.</p><h3>Forma</h3><div class="grid2">${opciones(CABECERAS, E.cabecera, 'cabecera')}</div>
+      <h3>Nombre</h3><div class="grid2">${opciones([['izquierda', 'A la izquierda'], ['centro', 'Centrado']], E.cabecera_alineacion, 'cabecera_alineacion')}</div>`,
+    fondo: () => `<h2>Fondo</h2><h3>Tono</h3><div class="grid3">${opciones([['claro', 'Claro'], ['oscuro', 'Oscuro'], ['color', 'De color']], E.fondo, 'fondo')}</div>
+      <h3>Textura</h3><div class="grid3">${TEXTURAS.map(t => `<button class="opt ${E.textura === t ? 'on' : ''}" data-set="textura" data-val="${t}">${texturaTile(t)}<b>${t[0].toUpperCase() + t.slice(1)}</b></button>`).join('')}</div>
+      <h3>Bordes</h3><div class="grid3">${opciones([['rectos', 'Rectos'], ['suaves', 'Suaves'], ['redondeados', 'Redondos']], E.bordes, 'bordes')}</div>`,
+    tarjetas: () => `<h2>Tarjetas</h2><p class="sub">Cómo se muestran tus productos.</p><h3>Forma</h3><div class="grid2">${opciones(TARJETAS, E.tarjeta, 'tarjeta')}</div>`,
+    bloques: pintarBloques,
+    intro: () => `<h2>Intro</h2><p class="sub">Una presentación corta al entrar. Siempre se puede saltear y el vecino puede apagarlas.</p>
+      <h3>Tipo</h3><div class="grid3">${INTROS.map(([k, t]) => `<button class="opt ${I.tipo === k ? 'on' : ''}" data-intro="tipo" data-val="${k}"><b>${t}</b></button>`).join('')}</div>
+      ${I.tipo === 'frase' ? `<div class="field"><label>Frase</label><input id="frase" maxlength="60" value="${esc(I.texto || '')}" placeholder="Ej: Vestidos para ese día"></div>` : ''}
+      ${I.tipo === 'video' ? '<p class="sub" style="margin-top:8px">El video se sube desde el panel. Mientras tanto se muestra el logo.</p>' : ''}
+      <div class="field"><label>Duración: ${(I.duracion_ms / 1000).toFixed(1)} s (máximo 3)</label><input type="range" id="dur" min="1000" max="3000" step="250" value="${I.duracion_ms}"></div>
+      <button class="btn dark" id="probar" ${I.tipo === 'ninguna' ? 'disabled' : ''}>▶ Probar intro</button>`,
+    versiones: pintarVersiones
+  };
+  P.innerHTML = h[seccion]();
+  P.querySelectorAll('[data-set]').forEach(b => b.onclick = () => {
+    const k = b.dataset.set, v = b.dataset.val;
+    if (k === 'estilo_base') return cambiar({estilo_base: v, ...PRESET[v]});
+    if (k === 'color') return cambiar({color: contraste(v) < 3 ? oscurecer(v) : v});
+    cambiar({[k]: v});
+  });
+  const otro = P.querySelector('#otro');
+  if (otro) otro.onchange = () => { const v = otro.value.toUpperCase(); const ok = contraste(v) >= 3 ? v : oscurecer(v);
+    if (ok !== v) msgDer = `Ese color no se leía bien con letra blanca. Usamos uno parecido más oscuro: ${ok}.`; cambiar({color: ok}); };
+  P.querySelectorAll('[data-intro]').forEach(b => b.onclick = () => cambiar({tipo: b.dataset.val}, 'intro'));
+  const fr = P.querySelector('#frase'); if (fr) fr.oninput = () => { I.texto = fr.value; previa(); guardar('intro'); };
+  const du = P.querySelector('#dur'); if (du) du.onchange = () => cambiar({duracion_ms: +du.value}, 'intro');
+  const pr = P.querySelector('#probar'); if (pr) pr.onclick = () => { previa(); document.getElementById('prev').contentWindow.postMessage({tipo: 'lf-intro'}, location.origin); };
+  if (seccion === 'bloques') atarBloques();
+  if (seccion === 'versiones') atarVersiones();
+}
+function texturaTile(t) {
+  const c = '#D8D2C6';
+  if (t === 'logo') return `<div class="tex" style="background:#FAF8F4;display:flex;align-items:center;justify-content:flex-end;padding-right:6px;font-weight:700;font-size:28px;color:${c}">${esc(L.nombre[0])}</div>`;
+  const fondo = {papel: `radial-gradient(${c} .7px,transparent .8px) 0 0/7px 7px,#FAF8F4`, rayas: `repeating-linear-gradient(135deg,${c} 0 2px,transparent 2px 12px)`,
+    puntos: `radial-gradient(${c} 2px,transparent 2.5px) 0 0/14px 14px`, lisa: '#fff'}[t];
+  return `<div class="tex" style="background:${fondo}"></div>`;
+}
+
+// ---------- Bloques ----------
+const nombreTipo = k => TIPOS.find(t => t.codigo === k)?.nombre || k;
+function pintarBloques() {
+  const orden = B.slice().sort((a, b) => a.orden - b.orden);
+  const usados = new Set(B.map(b => b.tipo));
+  const b = sel && B.find(x => x.id === sel);
+  return `<h2>Bloques</h2><p class="sub">Tu página es una pila de bloques. Ordenalos, prendelos o apagalos.</p>
+    <h3>En tu página</h3>${orden.map((x, i) => `<div class="bl ${x.activo ? '' : 'off'} ${sel === x.id ? 'sel' : ''}" data-bl="${x.id}">
+      <span class="mv"><button data-sube="${x.id}" ${i === 0 ? 'disabled' : ''}>▲</button><button data-baja="${x.id}" ${i === orden.length - 1 ? 'disabled' : ''}>▼</button></span>
+      <span class="n"><b>${esc(x.titulo || nombreTipo(x.tipo))}</b><small>${esc(nombreTipo(x.tipo))}</small></span>
+      <button class="sw ${x.activo ? 'on' : ''}" data-sw="${x.id}" title="Prender o apagar"></button></div>`).join('') || '<p class="sub">Todavía no hay bloques.</p>'}
+    ${b ? `<h3>Bloque elegido</h3><div class="field"><label>Título</label><input id="btit" value="${esc(b.titulo || '')}" placeholder="${esc(nombreTipo(b.tipo))}"></div>
+      <button class="btn line sm" id="bquitar">Quitar de la página</button>` : ''}
+    <h3>Agregar</h3><div class="lib">${TIPOS.filter(t => !usados.has(t.codigo)).sort((a, b) => a.grupo.localeCompare(b.grupo)).map(t =>
+      `<button data-add="${t.codigo}">+ ${esc(t.nombre)}${t.plan_minimo > L.plan_id ? ' <small>plan completo</small>' : ''}</button>`).join('')}</div>`;
+}
+async function reordenar(lista) {
+  lista.forEach((x, i) => x.orden = i + 1);
+  await Promise.all(lista.map(x => sb.from('comercio_bloques').update({orden: x.orden}).eq('id', x.id)));
+}
+function atarBloques() {
+  const P = document.getElementById('panel');
+  const refrescar = () => { pintarPanel(); previa(); document.getElementById('estado').textContent = 'Borrador guardado'; };
+  P.querySelectorAll('[data-bl]').forEach(d => d.onclick = ev => { if (ev.target.closest('button')) return; sel = +d.dataset.bl; pintarPanel(); });
+  P.querySelectorAll('[data-sw]').forEach(s => s.onclick = async () => { const x = B.find(y => y.id === +s.dataset.sw); x.activo = !x.activo; refrescar(); await sb.from('comercio_bloques').update({activo: x.activo}).eq('id', x.id); });
+  const mover = async (id, d) => { const o = B.slice().sort((a, b) => a.orden - b.orden); const i = o.findIndex(x => x.id === id); [o[i], o[i + d]] = [o[i + d], o[i]]; o.forEach((x, k) => x.orden = k + 1); refrescar(); await reordenar(o); };
+  P.querySelectorAll('[data-sube]').forEach(s => s.onclick = () => mover(+s.dataset.sube, -1));
+  P.querySelectorAll('[data-baja]').forEach(s => s.onclick = () => mover(+s.dataset.baja, 1));
+  P.querySelectorAll('[data-add]').forEach(a => a.onclick = async () => {
+    const {data, error} = await sb.from('comercio_bloques').insert({comercio_id: L.id, tipo: a.dataset.add, orden: B.length + 1, activo: true}).select('*').single();
+    if (error) return alert(errorTexto(error)); B.push(data); sel = data.id; refrescar();
+  });
+  const t = P.querySelector('#btit'); if (t) t.onchange = async () => { const x = B.find(y => y.id === sel); x.titulo = t.value.trim() || null; refrescar(); await sb.from('comercio_bloques').update({titulo: x.titulo}).eq('id', x.id); };
+  const q = P.querySelector('#bquitar'); if (q) q.onclick = async () => { if (!confirm('¿Quitar este bloque de la página?')) return; await sb.from('comercio_bloques').delete().eq('id', sel); B = B.filter(x => x.id !== sel); sel = null; refrescar(); };
+}
+
+// ---------- Versiones y publicar ----------
+function pintarVersiones() {
+  const manana = new Date(Date.now() + 864e5); manana.setHours(9, 0, 0, 0);
+  const local = d => new Date(d.getTime() - d.getTimezoneOffset() * 6e4).toISOString().slice(0, 16);
+  return `<h2>Publicar y versiones</h2><p class="sub">Lo que editás es un borrador. El público ve la versión publicada.</p>
+    <h3>Publicar el borrador</h3><div class="field"><label>Nombre de la versión (opcional)</label><input id="vnom" placeholder="Ej: Temporada verano"></div>
+    <div class="grid2"><button class="btn main" id="pubya">Publicar ahora</button><button class="btn line" id="pubprog">Programar…</button></div>
+    <div class="field" id="progbox" hidden><label>Fecha y hora</label><input type="datetime-local" id="vcuando" value="${local(manana)}"><button class="btn dark" id="pubconf" style="margin-top:6px">Programar publicación</button></div>
+    <div id="vmsg"></div>
+    <h3>Historial</h3>${VERS.map(v => `<div class="ver ${v.estado === 'publicada' ? 'pub' : v.estado === 'programada' ? 'prog' : ''}">
+      <b>Versión ${v.numero}${v.nombre ? ' · ' + esc(v.nombre) : ''}</b><small>${v.estado === 'publicada' ? 'Publicada ' + fechaHora(v.publicada_en) : v.estado === 'programada' ? 'Sale sola el ' + fechaHora(v.publicar_en) : 'Archivada · ' + fechaHora(v.creado)}</small>
+      ${v.estado === 'archivada' ? `<div style="margin-top:6px"><button class="btn line sm" data-volver="${v.id}">Volver a esta</button></div>` : ''}</div>`).join('') || '<p class="sub">Todavía no publicaste ninguna versión.</p>'}`;
+}
+const fechaHora = d => d ? new Date(d).toLocaleString('es-AR', {weekday: 'short', day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit'}) : '';
+async function recargarVersiones(msg) {
+  const {data} = await sb.from('vidriera_versiones').select('id,numero,nombre,estado,creado,publicar_en,publicada_en').eq('comercio_id', L.id).order('numero', {ascending: false});
+  VERS = data || []; pintarPanel(); document.getElementById('vmsg').innerHTML = msg;
+}
+function atarVersiones() {
+  const nom = () => document.getElementById('vnom').value.trim() || null;
+  document.getElementById('pubya').onclick = async ev => {
+    ev.target.disabled = true; clearTimeout(guardando);
+    const {comercio_id, ...resto} = E; await sb.from('comercio_estilo').update(resto).eq('comercio_id', L.id); await sb.from('comercio_intro').upsert(I);
+    const {error} = await sb.rpc('publicar_vidriera', {p_comercio: L.id, p_cuando: null, p_nombre: nom()});
+    recargarVersiones(error ? `<div class="err">${esc(errorTexto(error))}</div>` : '<div class="okmsg">✓ Publicada. Ya la ve todo el mundo.</div>');
+  };
+  document.getElementById('pubprog').onclick = () => { document.getElementById('progbox').hidden = false; };
+  document.getElementById('pubconf').onclick = async () => {
+    const cuando = new Date(document.getElementById('vcuando').value);
+    if (!(cuando > new Date())) return document.getElementById('vmsg').innerHTML = '<div class="err">Elegí una fecha y hora que todavía no pasó.</div>';
+    const {error} = await sb.rpc('publicar_vidriera', {p_comercio: L.id, p_cuando: cuando.toISOString(), p_nombre: nom()});
+    recargarVersiones(error ? `<div class="err">${esc(errorTexto(error))}</div>` : `<div class="okmsg">✓ Programada para el ${fechaHora(cuando)}. Sale sola.</div>`);
+  };
+  document.querySelectorAll('[data-volver]').forEach(b => b.onclick = async () => {
+    if (!confirm('¿Volver a esa versión? Se publica ahora y tu borrador pasa a ser esa versión.')) return;
+    const {error} = await sb.rpc('volver_a_version', {p_version: +b.dataset.volver});
+    if (error) return recargarVersiones(`<div class="err">${esc(errorTexto(error))}</div>`);
+    await abrir(L.id); seccion = 'versiones'; pintarPanel();
+    document.getElementById('vmsg').innerHTML = '<div class="okmsg">✓ Volviste a esa versión y ya está publicada.</div>';
+  });
+}
+
+// ---------- Columna derecha: lo que el editor cuida ----------
+function pintarDer() {
+  const D = document.getElementById('der'); if (!D) return;
+  const c = contraste(E.color);
+  const parecido = OTROS.filter(o => o.comercio_id !== L.id && o.contenido?.estilo).find(o => {
+    const e = o.contenido.estilo; return e.tipografia === E.tipografia && e.cabecera === E.cabecera && distancia(e.color, E.color) < 60; });
+  const pend = VERS.find(v => v.estado === 'programada');
+  D.innerHTML = `<h3>Controles</h3>
+    ${msgDer ? `<div class="chk w">${esc(msgDer)}</div>` : ''}
+    <div class="chk ${c >= 4.5 ? 'ok' : 'w'}"><b>${c >= 4.5 ? '✓ Se lee bien' : '✓ Se lee, justo'}</b>Contraste ${c.toFixed(1)}:1 con letra blanca${c >= 4.5 ? '.' : '. Un tono más oscuro se leería mejor.'}</div>
+    ${parecido ? `<div class="chk w"><b>Se parece a otro local</b>${esc(parecido.slug.replace(/-/g, ' '))} usa la misma letra, cabecera y un color muy parecido. Probá otra cabecera o letra para distinguirte.</div>` : '<div class="chk ok"><b>✓ Distinta a las demás</b>Ningún local de la calle tiene la misma combinación.</div>'}
+    ${pend ? `<div class="chk w"><b>Hay una versión programada</b>Sale sola el ${fechaHora(pend.publicar_en)}.</div>` : ''}
+    <h3 style="margin-top:18px">Esto no se cambia</h3>
+    <div class="fijo">· La barra de Las Flores arriba<br>· El botón verde de WhatsApp<br>· Cómo llegar y el horario<br>· El tamaño mínimo de letra<br>· Las opiniones de clientes<br><br>Así cualquier vecino encuentra lo importante en el mismo lugar, en todos los locales.</div>`;
+  msgDer = '';
+}
+
+if (await iniciar()) {}
+</script>
+</body>
+</html>
