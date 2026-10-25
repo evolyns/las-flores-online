@@ -43,6 +43,15 @@ h2{font-size:17px;margin:22px 0 10px}
 .btn.main{background:var(--o);color:#fff}.btn.line{border:1px solid var(--line);background:#fff}
 .btn.wa{background:#22C35E;color:#fff}
 .btn.block{width:100%}
+[hidden]{display:none!important}
+.btn.sm{padding:7px 11px;font-size:13.5px;border-radius:10px}
+.lfbar .camp{margin-left:auto;position:relative;font-size:20px;text-decoration:none;padding:2px 4px;line-height:1}
+.lfbar .camp i{position:absolute;top:-6px;right:-8px;background:#D85A30;color:#fff;font-style:normal;font-size:11px;font-weight:700;border-radius:99px;padding:2px 6px}
+.talle.agot{opacity:.55;text-decoration:line-through}.talle.agot.on{opacity:1}
+.av{display:flex;gap:12px;padding:12px 14px;align-items:flex-start;text-decoration:none;color:inherit;border-top:1px solid var(--line)}
+.av:first-child{border-top:0}.av.nueva{background:#FFF8F1}
+.toast{position:fixed;left:16px;right:16px;top:12px;z-index:95;max-width:528px;margin:0 auto;background:#2C2C2A;color:#fff;border-radius:14px;padding:12px 14px;font-size:14px;box-shadow:0 8px 24px rgba(0,0,0,.25);display:block;text-decoration:none;animation:bajar .3s ease}
+@keyframes bajar{from{transform:translateY(-20px);opacity:0}to{transform:none;opacity:1}}
 .muted{color:var(--mute)}
 .empty{padding:28px 16px;text-align:center;color:var(--mute);font-size:14.5px}
 .loading{padding:40px;text-align:center;color:var(--mute)}
@@ -267,11 +276,66 @@ async function cargarTodo() {
   D.listo = true;
 }
 let SESION = null;
-sb.auth.onAuthStateChange((_e, s) => { SESION = s; });
+sb.auth.onAuthStateChange((_e, s) => { SESION = s; if (s) setTimeout(conectarAvisos, 0); });
+
+// ---------- Avisos dentro de la app (gratis) y tiempo real ----------
+let NOAV = 0, canalAvisos = null;
+const ICONO_AV = {talle: '👟', precio: '🏷️', aviso: '📣', opinion: '⭐', respuesta: '💬', apartado: '🛍️', turno: '📅', puntos: '🎁', local: '🏪'};
+function pintarCampana() { document.querySelectorAll('.camp').forEach(a => a.innerHTML = '🔔' + (NOAV ? `<i>${NOAV > 99 ? '99+' : NOAV}</i>` : '')); }
+function hace(d) {
+  const m = Math.round((Date.now() - new Date(d)) / 60000);
+  if (m < 1) return 'recién'; if (m < 60) return `hace ${m} min`; if (m < 24 * 60) return `hace ${Math.round(m / 60)} h`;
+  return new Date(d).toLocaleDateString('es-AR', {day: 'numeric', month: 'short'});
+}
+function toast(n) {
+  const a = document.createElement('a'); a.className = 'toast'; a.href = n.link || '#/avisos';
+  a.innerHTML = `<b>${ICONO_AV[n.tipo] || '🔔'} ${esc(n.titulo)}</b>${n.texto ? `<br><span style="opacity:.85">${esc(n.texto)}</span>` : ''}`;
+  a.onclick = () => a.remove(); document.body.appendChild(a); setTimeout(() => a.remove(), 6000);
+  try { navigator.vibrate?.(120); } catch (_) {}
+}
+async function conectarAvisos() {
+  if (!SESION || EN_PREVIA) return;
+  const {count} = await sb.from('notificaciones').select('id', {count: 'exact', head: true}).is('leida_en', null);
+  NOAV = count || 0; pintarCampana();
+  if (canalAvisos) return;
+  canalAvisos = sb.channel('lf-avisos-' + SESION.user.id)
+    .on('postgres_changes', {event: 'INSERT', schema: 'public', table: 'notificaciones', filter: 'perfil_id=eq.' + SESION.user.id}, ({new: n}) => {
+      if (location.hash === '#/avisos') return pAvisos();
+      NOAV++; pintarCampana(); toast(n);
+      if (n.tipo === 'puntos' && location.hash === '#/perfil') pPerfil();
+    }).subscribe();
+}
+// Semáforo de mesas y demás estados en vivo: se actualizan solos, con o sin cuenta
+if (!EN_PREVIA) sb.channel('lf-vivo').on('postgres_changes', {event: '*', schema: 'public', table: 'estados_en_vivo'}, async () => {
+  const {data} = await sb.from('en_vivo_vigente').select('*'); if (data) D.vivo = data;
+  const h = location.hash;
+  if (h === '' || h === '#/') pInicio();
+  else { const m = h.match(/^#\/l\/(.+)$/); if (m) { const y = window.scrollY; await pLocal(decodeURIComponent(m[1]), true); window.scrollTo(0, y); } }
+}).subscribe();
+
+async function pAvisos() {
+  marcarTab('');
+  if (!SESION) { location.hash = '#/perfil'; return; }
+  $app.innerHTML = barra('Avisos', '', true) + '<main class="wrap"><div class="loading">Cargando…</div></main>';
+  const [{data: ns}, {data: als}] = await Promise.all([
+    sb.from('notificaciones').select('*').order('creado', {ascending: false}).limit(60),
+    sb.from('alertas').select('id,tipo,talle,comercio_id,productos(nombre)').eq('perfil_id', SESION.user.id).eq('activa', true).order('creado', {ascending: false})]);
+  const lista = ns || [];
+  $app.querySelector('main').innerHTML = `<h1>Avisos</h1><p class="sub">Lo que pasa en los locales que te interesan. Llega acá, sin mensajes pagos.</p>
+    <div class="card" style="margin-top:14px;padding:0;overflow:hidden">${lista.map(n => `<a class="av ${n.leida_en ? '' : 'nueva'}" href="${esc(n.link || '#/avisos')}"><span style="font-size:22px">${ICONO_AV[n.tipo] || '🔔'}</span>
+      <span style="flex:1"><b>${esc(n.titulo)}</b>${n.texto ? `<br><small class="muted">${esc(n.texto)}</small>` : ''}<br><small class="muted">${hace(n.creado)}</small></span></a>`).join('') || '<div class="empty">Todavía no tenés avisos. Seguí locales o tocá “Avisame” en un producto.</div>'}</div>
+    <h2>Lo que estás esperando</h2>
+    <div class="card" style="padding:0;overflow:hidden">${(als || []).map(a => `<div class="av"><span style="font-size:20px">${a.tipo === 'precio' ? '🏷️' : '👟'}</span>
+      <span style="flex:1"><b>${esc(a.productos?.nombre || 'Producto')}</b><br><small class="muted">${a.tipo === 'precio' ? 'Si baja de precio' : 'Cuando vuelva el talle ' + esc(a.talle || '')} · ${esc(D.porId[a.comercio_id]?.nombre || '')}</small></span>
+      <button class="btn line sm" data-quitar="${a.id}">Quitar</button></div>`).join('') || '<div class="empty">Nada por ahora. Si un producto no tiene tu talle, tocá “Avisame cuando vuelva”.</div>'}</div>`;
+  document.querySelectorAll('[data-quitar]').forEach(b => b.onclick = async () => { await sb.from('alertas').delete().eq('id', +b.dataset.quitar); pAvisos(); });
+  if (lista.some(n => !n.leida_en)) { await sb.from('notificaciones').update({leida_en: new Date().toISOString()}).is('leida_en', null); }
+  NOAV = 0; pintarCampana();
+}
 
 // ---------- Armazón de pantallas ----------
 function barra(titulo = 'Las Flores', sub = 'online', volver = false) {
-  return `<div class="lfbar">${volver ? '<a class="back" href="javascript:history.back()" aria-label="Volver">‹</a>' : ''}<span class="lf">LF</span><b>${esc(titulo)}</b><span>${esc(sub)}</span></div>`
+  return `<div class="lfbar">${volver ? '<a class="back" href="javascript:history.back()" aria-label="Volver">‹</a>' : ''}<span class="lf">LF</span><b>${esc(titulo)}</b><span>${esc(sub)}</span>${SESION && !EN_PREVIA ? `<a class="camp" href="#/avisos" aria-label="Avisos">🔔${NOAV ? `<i>${NOAV}</i>` : ''}</a>` : ''}</div>`
        + (MODO_PRUEBA ? '<div class="demo">Versión de prueba · los locales son de ejemplo</div>' : '');
 }
 function marcarTab(t) { document.querySelectorAll('#tabs a').forEach(a => a.classList.toggle('on', a.dataset.t === t)); }
@@ -464,7 +528,7 @@ function dibujarQR(uid) {
 const prefIntros = () => { try { return localStorage.getItem('lf-intros') !== 'no'; } catch (_) { return true; } };
 
 // ---------- Página del local: se arma con su vidriera publicada ----------
-async function pLocal(slug) {
+async function pLocal(slug, refresco = false) {
   marcarTab('');
   const c = D.comercios.find(x => x.slug === slug);
   if (!c) { $app.innerHTML = barra('Las Flores', 'online', true) + '<div class="empty">No encontramos ese local.</div>'; return; }
@@ -481,7 +545,7 @@ async function pLocal(slug) {
 
   $app.innerHTML = barra(c.nombre, 'en Las Flores', true) + `<div class="tienda" id="tienda" style="--a:${esc(e.color)};--fondo:${fondo};--tinta:${tinta};--suave:${suave};--rad:${rad};--fn:${fam},serif">
     <div class="loading">Cargando ${esc(c.nombre)}…</div></div>`;
-  if (!EN_PREVIA) registrar(c.id, 'vista');
+  if (!EN_PREVIA && !refresco) registrar(c.id, 'vista');
   if (intro.tipo && intro.tipo !== 'ninguna' && (forzarIntro || (!EN_PREVIA && prefIntros() && !sessionStorageGet('intro-' + c.id)))) { forzarIntro = false; mostrarIntro(c, intro, e, fam, modo, fondo, tinta); }
 
   const [prods, servs, ops, hist, sigo] = await Promise.all([
@@ -597,14 +661,31 @@ function hojaProducto(c, p, e) {
   sh.innerHTML = `<div class="in"><div class="big" style="background:${mezclar(e.color || '#E8711D', '#ffffff', .88)}">${p.fotos?.[0] ? `<img src="${esc(p.fotos[0].url)}" alt="">` : (EMOJI[c.rubros?.nombre] || '🏪')}</div>
     <h2 style="margin:0">${esc(p.nombre)}</h2><p style="font-size:20px;font-weight:700;margin:4px 0">${pesos(p.precio)}${p.precio_efectivo ? ` <small class="muted" style="font-size:14px">· ${pesos(p.precio_efectivo)} en efectivo</small>` : ''}</p>
     <p class="sub">${esc(c.nombre)} · Las Flores ${c.altura} · ${abierto(c.id) ? 'abierto ahora' : 'cerrado ahora'}</p>
-    ${vs.length ? `<p style="margin-top:14px;font-weight:600">Talles</p><div class="talles">${vs.map(v => `<button class="talle" data-v="${v.id}" ${v.stock > 0 ? '' : 'disabled'}>${esc(v.talle)}</button>`).join('')}</div>` : '<div style="height:14px"></div>'}
+    ${vs.length ? `<p style="margin-top:14px;font-weight:600">Talles</p><div class="talles">${vs.map(v => `<button class="talle ${v.stock > 0 ? '' : 'agot'}" data-v="${v.id}" title="${v.stock > 0 ? '' : 'Sin stock'}">${esc(v.talle)}</button>`).join('')}</div>` : '<div style="height:14px"></div>'}
     <div style="display:flex;flex-direction:column;gap:8px">
       <button class="btn wa block" id="pwa">Consultar por WhatsApp</button>
       ${c.rubros?.modulo !== 'menu' ? `<button class="btn line block" id="papartar">Apartar hasta mañana</button>` : ''}
+      <button class="btn line block" id="pavisar" hidden>🔔 Avisame cuando vuelva</button>
+      ${c.rubros?.modulo !== 'menu' ? '<button class="btn block muted" id="pprecio" style="font-weight:500;font-size:14px">🏷️ Avisame si baja de precio</button>' : ''}
       <div id="pmsg"></div><button class="btn block muted" id="pcerrar">Cerrar</button></div></div>`;
   document.body.appendChild(sh);
   let elegido = vs.length === 1 ? vs[0].id : (p.variantes || []).length === 1 ? p.variantes[0].id : null;
-  sh.querySelectorAll('.talle').forEach(b => b.onclick = () => { sh.querySelectorAll('.talle').forEach(x => x.classList.remove('on')); b.classList.add('on'); elegido = +b.dataset.v; });
+  const sinStock = id => (p.variantes || []).find(v => v.id === id)?.stock <= 0;
+  const actualizar = () => {
+    const ag = elegido && sinStock(elegido), bA = sh.querySelector('#papartar'), bV = sh.querySelector('#pavisar');
+    if (bA) bA.hidden = !!ag;
+    bV.hidden = !ag; if (ag) bV.textContent = `🔔 Avisame cuando vuelva${vs.length ? ' el talle ' + (vs.find(v => v.id === elegido)?.talle || '') : ''}`;
+  };
+  sh.querySelectorAll('.talle').forEach(b => b.onclick = () => { sh.querySelectorAll('.talle').forEach(x => x.classList.remove('on')); b.classList.add('on'); elegido = +b.dataset.v; sh.querySelector('#pmsg').innerHTML = ''; actualizar(); });
+  actualizar();
+  const pedirAviso = async (fila, ok) => {
+    const m = sh.querySelector('#pmsg');
+    if (!SESION) { m.innerHTML = '<div class="err">Para que te avisemos, entrá con tu celular. <a href="#/perfil">Entrar</a></div>'; return; }
+    const {error} = await sb.from('alertas').insert({perfil_id: SESION.user.id, producto_id: p.id, ...fila});
+    m.innerHTML = error ? `<div class="err">${esc(errorTexto(error))}</div>` : `<div class="okmsg">${ok} Te llega acá en la app, en la campanita 🔔.</div>`;
+  };
+  sh.querySelector('#pavisar').onclick = () => pedirAviso({tipo: 'talle', talle: vs.find(v => v.id === elegido)?.talle || null}, '¡Listo! Te avisamos cuando vuelva.');
+  const bp = sh.querySelector('#pprecio'); if (bp) bp.onclick = () => pedirAviso({tipo: 'precio'}, '¡Listo! Te avisamos si baja de precio.');
   sh.onclick = ev => { if (ev.target === sh) sh.remove(); };
   sh.querySelector('#pcerrar').onclick = () => sh.remove();
   sh.querySelector('#pwa').onclick = () => abrirWhatsApp(c, p, elegido && vs.length ? `Hola! Vi en Las Flores online “${p.nombre}” talle ${vs.find(v => v.id === elegido)?.talle}. ¿Lo tienen?` : '');
@@ -635,11 +716,13 @@ async function ruta() {
   if (a === 'mapa') return pMapa();
   if (a === 'actividad') return pActividad();
   if (a === 'perfil') return pPerfil();
+  if (a === 'avisos') return pAvisos();
   return pInicio();
 }
 window.addEventListener('hashchange', ruta);
 const {data: {session}} = await sb.auth.getSession(); SESION = session;
 ruta();
+conectarAvisos();
 setInterval(() => { if (D.listo && (location.hash === '' || location.hash === '#/')) { cargarTodo().then(() => { if (location.hash === '' || location.hash === '#/') pInicio(); }); } }, 60000);
 </script>
 </body>
