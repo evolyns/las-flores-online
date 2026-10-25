@@ -302,27 +302,31 @@ function pBuscar(q = '') {
     <div id="res">${q ? '<div class="loading">Buscando…</div>' : '<div class="empty">Escribí qué estás buscando. Te mostramos en qué local está, si está abierto y cómo llegar.</div>'}</div>
   </main>`;
   document.getElementById('fb').onsubmit = ev => { ev.preventDefault(); const v = document.getElementById('q').value.trim(); location.hash = '#/buscar/' + encodeURIComponent(v); };
-  document.querySelectorAll('.chip').forEach(b => b.onclick = () => { filtroRubro = b.dataset.r; pBuscar(document.getElementById('q').value.trim()); if (document.getElementById('q').value.trim()) buscar(document.getElementById('q').value.trim()); });
+  document.querySelectorAll('.chip').forEach(b => b.onclick = () => { filtroRubro = b.dataset.r; pBuscar(document.getElementById('q').value.trim()); });
   if (q) buscar(q);
 }
 async function buscar(q) {
-  const palabras = q.toLowerCase().split(/\s+/).filter(Boolean);
+  // Busca sin tildes y en singular o plural: "zapatillas" encuentra "Zapatilla urbana"
+  const norm = s => String(s || '').toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+  const raiz = w => w.length > 4 ? w.replace(/(es|s)$/, '') : w;
+  const palabras = norm(q).split(/\s+/).filter(Boolean);
   const numero = palabras.find(p => /^\d{2}$/.test(p));                 // "41" → talle
-  const texto = palabras.filter(p => p !== numero).join(' ');
+  const raices = palabras.filter(p => p !== numero).map(raiz);
   const enRubro = c => !filtroRubro || c.rubros?.nombre === filtroRubro;
-  let prods = [], servs = [];
-  if (texto) {
-    const like = `%${texto.replace(/[%_,()]/g, ' ')}%`;
+  if (!D.productos) {
     const [p, s] = await Promise.all([
-      sb.from('productos').select('id,nombre,precio,comercio_id,variantes(talle,stock)').ilike('nombre', like).limit(40),
-      sb.from('servicios').select('id,nombre,precio,duracion_min,comercio_id').ilike('nombre', like).limit(20)]);
-    prods = p.data || []; servs = s.data || [];
+      sb.from('productos').select('id,nombre,precio,comercio_id,variantes(talle,stock)').limit(2000),
+      sb.from('servicios').select('id,nombre,precio,duracion_min,comercio_id').limit(1000)]);
+    D.productos = p.data || []; D.servicios = s.data || [];
   }
-  if (numero) prods = (texto ? prods : (await sb.from('productos').select('id,nombre,precio,comercio_id,variantes(talle,stock)').limit(200)).data || [])
-    .filter(p => p.variantes?.some(v => v.talle === numero && v.stock > 0));
-  prods = prods.filter(p => D.porId[p.comercio_id] && enRubro(D.porId[p.comercio_id]));
-  servs = servs.filter(s => D.porId[s.comercio_id] && enRubro(D.porId[s.comercio_id]));
-  const locs = D.comercios.filter(c => enRubro(c) && texto && [c.nombre, c.rubros?.nombre, c.categorias_comercio?.nombre].join(' ').toLowerCase().includes(texto));
+  const delLocal = c => [c.nombre, c.rubros?.nombre, c.categorias_comercio?.nombre].join(' ');
+  const coincide = t => raices.every(r => norm(t).includes(r));
+  const visibles = D.productos.filter(p => D.porId[p.comercio_id] && enRubro(D.porId[p.comercio_id]));
+  const porNombre = visibles.filter(p => raices.length && coincide(p.nombre));
+  let prods = !raices.length ? (numero ? visibles : []) : porNombre.length ? porNombre : visibles.filter(p => coincide(p.nombre + ' ' + delLocal(D.porId[p.comercio_id])));
+  if (numero) prods = prods.filter(p => p.variantes?.some(v => v.talle === numero && v.stock > 0));
+  const servs = numero || !raices.length ? [] : D.servicios.filter(s => D.porId[s.comercio_id] && enRubro(D.porId[s.comercio_id]) && coincide(s.nombre + ' ' + delLocal(D.porId[s.comercio_id])));
+  const locs = !raices.length ? [] : D.comercios.filter(c => enRubro(c) && coincide(delLocal(c)) && !prods.some(p => p.comercio_id === c.id) && !servs.some(s => s.comercio_id === c.id));
   const total = prods.length + servs.length + locs.length;
   sb.from('busquedas').insert({texto: q, resultados: total, filtros: filtroRubro ? {rubro: filtroRubro} : {}, perfil_id: SESION?.user?.id ?? null}).then(() => {});
   const fila = (c, titulo, detalle, precio) => `<a class="card res" href="#/l/${esc(c.slug)}"><span class="ic" style="background:${esc(estiloDe(c).color)}22">${EMOJI[c.rubros?.nombre] || '🏪'}</span>
