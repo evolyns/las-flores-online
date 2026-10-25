@@ -1,0 +1,625 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#E8711D">
+<title>Las Flores online</title>
+<meta name="description" content="Los locales de la calle Las Flores, en Wilde: qué hay, qué está abierto y cómo llegar.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--o:#E8711D;--o2:#FCE6D3;--ink:#2C2C2A;--mute:#77756F;--line:#E8E4DC;--bg:#F6F4EF;--card:#fff;--ok:#1D9E75;--warn:#EF9F27;--bad:#D85A30;--r:14px}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:16px;-webkit-text-size-adjust:100%}
+body{min-height:100vh;padding-bottom:calc(72px + env(safe-area-inset-bottom))}
+a{color:inherit}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input{font:inherit}
+.wrap{max-width:560px;margin:0 auto}
+/* barra de Las Flores: siempre igual en todas las páginas */
+.lfbar{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:10px;padding:10px 16px}
+.lfbar .lf{width:30px;height:30px;border-radius:9px;background:var(--o);color:#fff;font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none}
+.lfbar b{font-size:16px}.lfbar span{color:var(--mute);font-size:14px}
+.lfbar .back{font-size:22px;padding:0 6px 0 0;line-height:1}
+.demo{background:#FFF7E8;color:#8A5A12;font-size:12.5px;text-align:center;padding:6px 12px;border-bottom:1px solid #F3E2BE}
+/* navegación de abajo */
+nav.tabs{position:fixed;left:0;right:0;bottom:0;z-index:30;background:#fff;border-top:1px solid var(--line);padding-bottom:env(safe-area-inset-bottom)}
+nav.tabs .in{max-width:560px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr)}
+nav.tabs a{text-decoration:none;display:flex;flex-direction:column;align-items:center;gap:3px;padding:9px 0 8px;font-size:11.5px;color:var(--mute)}
+nav.tabs a svg{width:23px;height:23px}
+nav.tabs a.on{color:var(--o);font-weight:600}
+main{padding:14px 16px 24px}
+h1{font-size:24px;letter-spacing:-.3px;margin:4px 0 2px}
+h2{font-size:17px;margin:22px 0 10px}
+.sub{color:var(--mute);font-size:14px}
+.card{background:var(--card);border-radius:var(--r);border:1px solid var(--line)}
+.pill{display:inline-flex;align-items:center;gap:5px;font-size:12px;font-weight:600;border-radius:99px;padding:3px 9px;white-space:nowrap}
+.pill.open{background:#E1F5EE;color:#0F6E56}.pill.closed{background:#F1EFE8;color:#77756F}
+.dot{width:7px;height:7px;border-radius:99px;background:currentColor;display:inline-block}
+.row{display:flex;align-items:center;gap:10px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:12px;padding:12px 16px;font-weight:600;font-size:15px;text-decoration:none}
+.btn.main{background:var(--o);color:#fff}.btn.line{border:1px solid var(--line);background:#fff}
+.btn.wa{background:#22C35E;color:#fff}
+.btn.block{width:100%}
+.muted{color:var(--mute)}
+.empty{padding:28px 16px;text-align:center;color:var(--mute);font-size:14.5px}
+.loading{padding:40px;text-align:center;color:var(--mute)}
+.err{background:#FCEBE6;color:#8E2F14;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:10px}
+.okmsg{background:#E1F5EE;color:#0F5C46;border-radius:12px;padding:10px 12px;font-size:14px;margin-top:10px}
+/* listas de locales */
+.locs{display:flex;flex-direction:column;gap:10px}
+.loc{display:flex;gap:12px;align-items:center;padding:12px;text-decoration:none}
+.loc .ic{width:52px;height:52px;border-radius:13px;flex:none;display:flex;align-items:center;justify-content:center;color:#fff;font-size:22px;font-weight:700}
+.loc .t{flex:1;min-width:0}.loc b{display:block;font-size:16px}.loc small{color:var(--mute);font-size:13px}
+.hscroll{display:flex;gap:10px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:4px;margin:0 -16px;padding-left:16px;padding-right:16px}
+.hscroll>*{scroll-snap-align:start;flex:none}
+.promo{width:260px;padding:14px;border-radius:var(--r);color:#fff;text-decoration:none;display:flex;flex-direction:column;gap:6px;min-height:118px}
+.promo b{font-size:16px}.promo small{opacity:.9;font-size:13px}.promo .cd{margin-top:auto;font-size:12.5px;font-weight:600;background:rgba(0,0,0,.18);border-radius:99px;padding:3px 9px;align-self:flex-start}
+.vivo{display:flex;gap:10px;align-items:center;padding:12px 14px;text-decoration:none}
+.sem{width:14px;height:14px;border-radius:99px;flex:none}
+/* buscar */
+.search{display:flex;gap:8px;margin:6px 0 4px}
+.search input{flex:1;border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;outline:none}
+.search input:focus{border-color:var(--o)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.chip{border:1px solid var(--line);background:#fff;border-radius:99px;padding:6px 12px;font-size:13.5px}
+.chip.on{background:var(--ink);color:#fff;border-color:var(--ink)}
+.res{display:flex;gap:12px;align-items:center;padding:11px 12px;text-decoration:none}
+.res .ic{width:44px;height:44px;border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:20px;flex:none}
+.res .t{flex:1;min-width:0}.res b{display:block;font-size:15px}.res small{color:var(--mute);font-size:13px}
+.price{font-weight:700;white-space:nowrap}
+/* mapa */
+.mapa svg{width:100%;height:auto;display:block}
+/* perfil */
+.field{display:flex;flex-direction:column;gap:6px;margin:12px 0}
+.field label{font-size:13.5px;font-weight:600}
+.field input{border:1px solid var(--line);border-radius:12px;padding:12px 14px;background:#fff;outline:none;font-size:17px}
+.field input:focus{border-color:var(--o)}
+.tarjeta{border-radius:18px;padding:18px;color:#fff;background:linear-gradient(135deg,#E8711D,#C2560C)}
+.tarjeta .qr{background:#fff;border-radius:12px;padding:10px;width:180px;height:180px;margin:12px auto 6px;display:flex;align-items:center;justify-content:center}
+.tarjeta .qr svg,.tarjeta .qr img{width:160px;height:160px}
+.act{display:flex;gap:12px;align-items:center;padding:12px 14px}
+.act .ic{width:38px;height:38px;border-radius:10px;background:var(--o2);color:var(--o);display:flex;align-items:center;justify-content:center;font-size:18px;flex:none}
+/* ===== página del local: el tema sale de su vidriera publicada ===== */
+.tienda{--a:#E8711D;--fondo:#fff;--tinta:#2C2C2A;--suave:#F4EEE8;--rad:14px;--fn:inherit;background:var(--fondo);color:var(--tinta);min-height:100vh}
+.tienda .tex{position:absolute;inset:0;pointer-events:none;opacity:.55}
+.tienda .cab{position:relative;padding:26px 16px 18px;overflow:hidden}
+.tienda .nom{font-family:var(--fn);font-size:40px;line-height:1.05;color:var(--a);overflow-wrap:anywhere}
+.tienda .meta{font-size:13.5px;opacity:.8;margin-top:6px}
+.tienda .cab.centro{text-align:center}
+.tienda .cab.cartel{background:var(--tinta);color:var(--fondo)}
+.tienda .cab.cartel .nom{color:var(--fondo);text-transform:uppercase;letter-spacing:1px;font-size:34px}
+.tienda .cab.portada .band{height:120px;margin:-26px -16px 16px;background:var(--suave);display:flex;align-items:center;justify-content:center;font-size:56px;gap:22px}
+.tienda .cab.escudo .esc{width:76px;height:76px;border-radius:50%;border:3px solid var(--a);color:var(--a);display:flex;align-items:center;justify-content:center;font-family:var(--fn);font-size:36px;margin-bottom:12px}
+.tienda .cab.escudo.centro .esc{margin-left:auto;margin-right:auto}
+.tienda .cab.firma .nom::after{content:"";display:block;width:90px;height:3px;background:var(--a);border-radius:3px;margin-top:10px}
+.tienda .cab.firma.centro .nom::after{margin-left:auto;margin-right:auto}
+.tienda .estado{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.tienda .cab.centro .estado{justify-content:center}
+.tienda section{padding:8px 16px 14px;position:relative}
+.tienda h3{font-family:var(--fn);font-size:21px;margin:10px 0 10px;color:var(--tinta)}
+.tienda .box{background:var(--suave);border-radius:var(--rad);padding:14px}
+.tienda .promoL{background:var(--a);color:#fff;border-radius:var(--rad);padding:16px}
+.tienda .promoL b{font-family:var(--fn);font-size:20px;display:block}.tienda .promoL small{opacity:.92}
+.tienda .prods{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.tienda .prods.lista{grid-template-columns:1fr}
+.tienda .prods.mosaico{grid-template-columns:1fr 1fr 1fr;gap:6px}
+.tienda .prods.lookbook{grid-template-columns:1fr}
+.tienda .prod{background:#fff;border-radius:var(--rad);overflow:hidden;border:1px solid rgba(0,0,0,.06);color:#2C2C2A;text-align:left;width:100%}
+.tienda .prod .img{aspect-ratio:1;background:var(--suave);display:flex;align-items:center;justify-content:center;font-size:42px}
+.tienda .prods.lookbook .prod .img{aspect-ratio:4/3;font-size:70px}
+.tienda .prods.lista .prod{display:flex;align-items:center}
+.tienda .prods.lista .prod .img{width:72px;flex:none;font-size:30px}
+.tienda .prods.mosaico .prod .info{display:none}
+.tienda .prod .info{padding:9px 11px}
+.tienda .prod b{display:block;font-size:14.5px}.tienda .prod span{font-size:14px;font-weight:700}
+.tienda .hs{display:flex;gap:10px;overflow-x:auto;margin:0 -16px;padding:0 16px 4px}
+.tienda .hs .prod{width:150px;flex:none}
+.tienda .serv{display:flex;align-items:center;gap:10px;padding:12px 0;border-top:1px solid rgba(0,0,0,.07)}
+.tienda .serv:first-child{border-top:0}
+.tienda .serv .t{flex:1}
+.tienda .op{padding:12px 0;border-top:1px solid rgba(0,0,0,.07)}
+.tienda .estrellas{color:#E2A400;letter-spacing:1px}
+.tienda .fijo{position:sticky;bottom:calc(64px + env(safe-area-inset-bottom));padding:10px 16px;background:linear-gradient(to top,var(--fondo) 70%,transparent);display:flex;gap:8px;z-index:5}
+.tienda .fijo .btn{flex:1}
+.tienda .calle{height:46px;position:relative;border-radius:10px;background:#E9E6DF;margin:6px 0 10px;overflow:hidden}
+.tienda .calle .pin{position:absolute;top:8px;width:30px;height:30px;margin-left:-15px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:var(--a)}
+/* hoja de producto */
+.sheet{position:fixed;inset:0;z-index:60;background:rgba(0,0,0,.4);display:flex;align-items:flex-end;justify-content:center}
+.sheet .in{background:#fff;color:#2C2C2A;width:100%;max-width:560px;border-radius:20px 20px 0 0;padding:18px 16px calc(18px + env(safe-area-inset-bottom));max-height:88vh;overflow:auto}
+.sheet .big{aspect-ratio:16/10;border-radius:14px;display:flex;align-items:center;justify-content:center;font-size:80px;margin-bottom:12px}
+.talles{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 14px}
+.talle{border:1px solid var(--line);border-radius:10px;padding:8px 13px;font-weight:600;background:#fff}
+.talle.on{border-color:var(--ink);background:var(--ink);color:#fff}
+.talle:disabled{opacity:.35;text-decoration:line-through}
+/* intro */
+.intro{position:fixed;inset:0;z-index:80;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:18px}
+.intro .n{font-size:46px;opacity:0;transform:scale(.92);animation:aparecer .9s ease forwards .2s;text-align:center;padding:0 20px}
+.intro .saltar{position:absolute;right:16px;bottom:calc(24px + env(safe-area-inset-bottom));background:rgba(255,255,255,.18);color:inherit;border-radius:99px;padding:9px 16px;font-size:14px;font-weight:600}
+.intro.persiana::before{content:"";position:absolute;inset:0;background:inherit;transform-origin:top;animation:persiana 1.4s ease forwards .6s;z-index:-1}
+@keyframes aparecer{to{opacity:1;transform:none}}
+@keyframes persiana{to{transform:scaleY(0)}}
+@media (prefers-reduced-motion:reduce){.intro .n{animation:none;opacity:1;transform:none}}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">Cargando Las Flores…</div></div>
+<nav class="tabs" id="tabs"><div class="in">
+  <a href="#/" data-t="inicio"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1z"/></svg>Inicio</a>
+  <a href="#/buscar" data-t="buscar"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-4-4"/></svg>Buscar</a>
+  <a href="#/mapa" data-t="mapa"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 4L3 6v14l6-2 6 2 6-2V4l-6 2z"/><path d="M9 4v14M15 6v14"/></svg>Mapa</a>
+  <a href="#/actividad" data-t="actividad"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 3h12v18l-6-4-6 4z"/></svg>Actividad</a>
+  <a href="#/perfil" data-t="perfil"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg>Perfil</a>
+</div></nav>
+
+<script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js"></script>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
+
+// ---------- Conexión (clave pública: es segura en el navegador porque la base tiene RLS) ----------
+const SUPABASE_URL = 'https://jvqunkkiypbvypgumxql.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_r1mug-RwM_3RCSoUQ6lo0Q_KiHiSHlZ';
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const MODO_PRUEBA = true;   // muestra el aviso de "locales de ejemplo"
+
+// ---------- Utilidades ----------
+const $app = document.getElementById('app');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pesos = n => '$' + Number(n).toLocaleString('es-AR', {maximumFractionDigits: 0});
+const TZ = 'America/Argentina/Buenos_Aires';
+const EMOJI = {'Moda':'👗','Calzado':'👟','Gastronomía':'☕','Almacén y alimentos':'🧺','Tecnología':'📱','Salud y óptica':'👓',
+  'Belleza y estética':'✂️','Deporte y bienestar':'🏋️','Regalos y librería':'🎁','Hogar y deco':'🪴','Mascotas':'🐾','Servicios':'🔧','Cultura y eventos':'🎭'};
+const FUENTES = {
+  elegante: ["'Playfair Display'", 'Playfair+Display:ital,wght@1,600', 'italic'],
+  tradicion:["'Lora'", 'Lora:wght@600'],
+  moderna:  ["'Montserrat'", 'Montserrat:wght@700', 'upper'],
+  urbana:   ["'Oswald'", 'Oswald:wght@600', 'upper'],
+  editorial:["'Fraunces'", 'Fraunces:wght@600'],
+  redonda:  ["'Poppins'", 'Poppins:wght@600'],
+  libro:    ["'Libre Baskerville'", 'Libre+Baskerville:wght@700'],
+  romana:   ["'Cinzel'", 'Cinzel:wght@600', 'upper'],
+  escolar:  ["'Andika'", 'Andika:wght@700'],
+  maquina:  ["'Courier Prime'", 'Courier+Prime:wght@700']
+};
+const cargadas = new Set();
+function usarFuente(k) {
+  const f = FUENTES[k] || FUENTES.tradicion;
+  if (!cargadas.has(k)) {
+    cargadas.add(k);
+    const l = document.createElement('link'); l.rel = 'stylesheet';
+    l.href = `https://fonts.googleapis.com/css2?family=${f[1]}&display=swap`; document.head.appendChild(l);
+  }
+  return f;
+}
+function ahoraBA() {
+  const p = Object.fromEntries(new Intl.DateTimeFormat('en-US', {timeZone: TZ, weekday: 'short', hour: '2-digit', minute: '2-digit', hourCycle: 'h23'})
+    .formatToParts(new Date()).map(x => [x.type, x.value]));
+  return {dia: ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'].indexOf(p.weekday), hora: `${p.hour}:${p.minute}`};
+}
+function abierto(cid) {
+  const {dia, hora} = ahoraBA();
+  return D.horarios.some(h => h.comercio_id === cid && h.dia_semana === dia && hora >= h.abre.slice(0,5) && hora < h.cierra.slice(0,5));
+}
+function proximaApertura(cid) {
+  const {dia, hora} = ahoraBA();
+  for (let i = 0; i < 7; i++) {
+    const d = (dia + i) % 7;
+    const hs = D.horarios.filter(h => h.comercio_id === cid && h.dia_semana === d && (i > 0 || h.abre.slice(0,5) > hora))
+      .sort((a, b) => a.abre.localeCompare(b.abre));
+    if (hs.length) return (i === 0 ? 'hoy' : i === 1 ? 'mañana' : ['domingo','lunes','martes','miércoles','jueves','viernes','sábado'][d]) + ' a las ' + hs[0].abre.slice(0,5);
+  }
+  return '';
+}
+function horarioHoy(cid) {
+  const {dia} = ahoraBA();
+  const hs = D.horarios.filter(h => h.comercio_id === cid && h.dia_semana === dia).sort((a,b) => a.abre.localeCompare(b.abre));
+  return hs.length ? hs.map(h => h.abre.slice(0,5) + ' a ' + h.cierra.slice(0,5)).join(' y ') : 'hoy cerrado';
+}
+function estadoPill(cid) {
+  return abierto(cid) ? `<span class="pill open"><span class="dot"></span>Abierto ahora</span>`
+                      : `<span class="pill closed"><span class="dot"></span>Cerrado · abre ${esc(proximaApertura(cid))}</span>`;
+}
+function falta(hasta) {
+  const ms = new Date(hasta) - Date.now(); if (ms <= 0) return 'terminó';
+  const h = Math.floor(ms / 36e5), d = Math.floor(h / 24);
+  return d >= 1 ? `termina en ${d} d ${h % 24} h` : h >= 1 ? `termina en ${h} h ${Math.floor(ms / 6e4) % 60} min` : `termina en ${Math.floor(ms / 6e4)} min`;
+}
+const comoLlegar = c => `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(`Las Flores ${c.altura}, Wilde, Buenos Aires`)}`;
+const estiloDe = c => (D.vidrieras[c.id]?.contenido?.estilo) || {color: '#E8711D'};
+const errorTexto = e => (e?.message || String(e)).replace(/^.*?: /, '');
+async function registrar(cid, evento, producto_id = null) {
+  try { await sb.from('visitas').insert({comercio_id: cid, evento, producto_id}); } catch (_) {}
+}
+
+// ---------- Datos que comparten todas las pantallas ----------
+const D = {listo: false};
+async function cargarTodo() {
+  const [com, vid, hor, pro, viv, cal] = await Promise.all([
+    sb.from('comercios').select('id,nombre,slug,altura,mano,whatsapp,instagram,rubros(nombre,modulo),categorias_comercio(nombre)').order('altura'),
+    sb.from('vidriera_publicada').select('comercio_id,slug,contenido'),
+    sb.from('horarios').select('*'),
+    sb.from('promos').select('*').gt('hasta', new Date().toISOString()).order('hasta'),
+    sb.from('en_vivo_vigente').select('*'),
+    sb.from('calificacion_comercios').select('*')
+  ]);
+  const err = [com, vid, hor, pro, viv, cal].find(r => r.error);
+  if (err) throw err.error;
+  D.comercios = com.data; D.horarios = hor.data; D.promos = pro.data; D.vivo = viv.data;
+  D.vidrieras = Object.fromEntries(vid.data.map(v => [v.comercio_id, v]));
+  D.calif = Object.fromEntries(cal.data.map(c => [c.comercio_id, c]));
+  D.porId = Object.fromEntries(D.comercios.map(c => [c.id, c]));
+  D.listo = true;
+}
+let SESION = null;
+sb.auth.onAuthStateChange((_e, s) => { SESION = s; });
+
+// ---------- Armazón de pantallas ----------
+function barra(titulo = 'Las Flores', sub = 'online', volver = false) {
+  return `<div class="lfbar">${volver ? '<a class="back" href="javascript:history.back()" aria-label="Volver">‹</a>' : ''}<span class="lf">LF</span><b>${esc(titulo)}</b><span>${esc(sub)}</span></div>`
+       + (MODO_PRUEBA ? '<div class="demo">Versión de prueba · los locales son de ejemplo</div>' : '');
+}
+function marcarTab(t) { document.querySelectorAll('#tabs a').forEach(a => a.classList.toggle('on', a.dataset.t === t)); }
+function tarjetaLocal(c) {
+  const e = estiloDe(c);
+  return `<a class="card loc" href="#/l/${esc(c.slug)}"><span class="ic" style="background:${esc(e.color)}">${EMOJI[c.rubros?.nombre] || '🏪'}</span>
+    <span class="t"><b>${esc(c.nombre)}</b><small>${esc(c.categorias_comercio?.nombre || c.rubros?.nombre)} · Las Flores ${c.altura}</small></span>
+    ${estadoPill(c.id)}</a>`;
+}
+
+// ---------- 1. Inicio ----------
+function pInicio() {
+  marcarTab('inicio');
+  const abiertos = D.comercios.filter(c => abierto(c.id));
+  const mesas = D.vivo.filter(v => v.tipo === 'mesas');
+  const SEM = {hay_lugar: ['#1D9E75', 'Hay lugar'], pocas: ['#EF9F27', 'Quedan pocas mesas'], lleno: ['#D85A30', 'Lleno']};
+  $app.innerHTML = barra() + `<main class="wrap">
+    <h1>Hoy en Las Flores</h1><p class="sub">${D.comercios.length} locales entre Av. Mitre y las vías · ${abiertos.length} abiertos ahora</p>
+    ${D.promos.length ? `<h2>Promos de hoy</h2><div class="hscroll">${D.promos.map(p => {
+      const c = D.porId[p.comercio_id]; if (!c) return '';
+      return `<a class="promo" href="#/l/${esc(c.slug)}" style="background:${esc(estiloDe(c).color)}"><small>${esc(c.nombre)}</small><b>${esc(p.titulo)}</b><small>${esc(p.detalle || '')}</small><span class="cd">${falta(p.hasta)}</span></a>`;
+    }).join('')}</div>` : ''}
+    ${mesas.length ? `<h2>En vivo</h2><div class="locs">${mesas.map(v => {
+      const c = D.porId[v.comercio_id]; const s = SEM[v.estado] || SEM.hay_lugar; if (!c) return '';
+      return `<a class="card vivo" href="#/l/${esc(c.slug)}"><span class="sem" style="background:${s[0]}"></span><span style="flex:1"><b>${esc(c.nombre)}</b> · ${s[1]}${v.cantidad ? ` (${v.cantidad} mesas)` : ''}</span><small class="muted">Las Flores ${c.altura}</small></a>`;
+    }).join('')}</div>` : ''}
+    <h2>${abiertos.length ? 'Abiertos ahora' : 'Todos los locales'}</h2>
+    <div class="locs">${(abiertos.length ? abiertos : D.comercios).map(tarjetaLocal).join('')}</div>
+    ${abiertos.length && abiertos.length < D.comercios.length ? `<h2>Cerrados ahora</h2><div class="locs">${D.comercios.filter(c => !abierto(c.id)).map(tarjetaLocal).join('')}</div>` : ''}
+  </main>`;
+}
+
+// ---------- 2. Buscar ----------
+let filtroRubro = '';
+function pBuscar(q = '') {
+  marcarTab('buscar');
+  const rubros = [...new Set(D.comercios.map(c => c.rubros?.nombre))];
+  $app.innerHTML = barra() + `<main class="wrap">
+    <h1>Buscar</h1><p class="sub">Un producto, un servicio o un local de la calle</p>
+    <form class="search" id="fb"><input id="q" type="search" placeholder="Ej: zapatillas 41, medialunas, corte" value="${esc(q)}" autocomplete="off" enterkeyhint="search"><button class="btn main">Buscar</button></form>
+    <div class="chips">${['', ...rubros].map(r => `<button class="chip ${r === filtroRubro ? 'on' : ''}" data-r="${esc(r)}">${r ? (EMOJI[r] || '') + ' ' + esc(r) : 'Todo'}</button>`).join('')}</div>
+    <div id="res">${q ? '<div class="loading">Buscando…</div>' : '<div class="empty">Escribí qué estás buscando. Te mostramos en qué local está, si está abierto y cómo llegar.</div>'}</div>
+  </main>`;
+  document.getElementById('fb').onsubmit = ev => { ev.preventDefault(); const v = document.getElementById('q').value.trim(); location.hash = '#/buscar/' + encodeURIComponent(v); };
+  document.querySelectorAll('.chip').forEach(b => b.onclick = () => { filtroRubro = b.dataset.r; pBuscar(document.getElementById('q').value.trim()); if (document.getElementById('q').value.trim()) buscar(document.getElementById('q').value.trim()); });
+  if (q) buscar(q);
+}
+async function buscar(q) {
+  const palabras = q.toLowerCase().split(/\s+/).filter(Boolean);
+  const numero = palabras.find(p => /^\d{2}$/.test(p));                 // "41" → talle
+  const texto = palabras.filter(p => p !== numero).join(' ');
+  const enRubro = c => !filtroRubro || c.rubros?.nombre === filtroRubro;
+  let prods = [], servs = [];
+  if (texto) {
+    const like = `%${texto.replace(/[%_,()]/g, ' ')}%`;
+    const [p, s] = await Promise.all([
+      sb.from('productos').select('id,nombre,precio,comercio_id,variantes(talle,stock)').ilike('nombre', like).limit(40),
+      sb.from('servicios').select('id,nombre,precio,duracion_min,comercio_id').ilike('nombre', like).limit(20)]);
+    prods = p.data || []; servs = s.data || [];
+  }
+  if (numero) prods = (texto ? prods : (await sb.from('productos').select('id,nombre,precio,comercio_id,variantes(talle,stock)').limit(200)).data || [])
+    .filter(p => p.variantes?.some(v => v.talle === numero && v.stock > 0));
+  prods = prods.filter(p => D.porId[p.comercio_id] && enRubro(D.porId[p.comercio_id]));
+  servs = servs.filter(s => D.porId[s.comercio_id] && enRubro(D.porId[s.comercio_id]));
+  const locs = D.comercios.filter(c => enRubro(c) && texto && [c.nombre, c.rubros?.nombre, c.categorias_comercio?.nombre].join(' ').toLowerCase().includes(texto));
+  const total = prods.length + servs.length + locs.length;
+  sb.from('busquedas').insert({texto: q, resultados: total, filtros: filtroRubro ? {rubro: filtroRubro} : {}, perfil_id: SESION?.user?.id ?? null}).then(() => {});
+  const fila = (c, titulo, detalle, precio) => `<a class="card res" href="#/l/${esc(c.slug)}"><span class="ic" style="background:${esc(estiloDe(c).color)}22">${EMOJI[c.rubros?.nombre] || '🏪'}</span>
+      <span class="t"><b>${esc(titulo)}</b><small>${esc(c.nombre)} · Las Flores ${c.altura} · ${abierto(c.id) ? 'abierto' : 'cerrado'}${detalle ? ' · ' + esc(detalle) : ''}</small></span>${precio != null ? `<span class="price">${pesos(precio)}</span>` : ''}</a>`;
+  document.getElementById('res').innerHTML = total ? `<p class="sub" style="margin:8px 0">${total} resultado${total > 1 ? 's' : ''}</p><div class="locs">
+      ${locs.map(tarjetaLocal).join('')}
+      ${prods.map(p => fila(D.porId[p.comercio_id], p.nombre, numero ? `hay ${numero}` : '', p.precio)).join('')}
+      ${servs.map(s => fila(D.porId[s.comercio_id], s.nombre, `${s.duracion_min} min`, s.precio || null)).join('')}</div>`
+    : `<div class="empty">No encontramos “${esc(q)}” en Las Flores.<br>Lo anotamos: así sabemos qué falta en la calle.</div>`;
+}
+
+// ---------- 3. Mapa de la calle (esquema por altura y mano) ----------
+function pMapa() {
+  marcarTab('mapa');
+  const W = 1000, x0 = 70, x1 = 930, max = 700, X = a => x0 + (Math.min(a, max) / max) * (x1 - x0);
+  const pins = D.comercios.map(c => {
+    const x = X(c.altura), arriba = c.mano === 'impar', y = arriba ? 92 : 228, col = abierto(c.id) ? estiloDe(c).color : '#B4B2A9';
+    return `<a href="#/l/${esc(c.slug)}"><g><line x1="${x}" y1="${arriba ? 112 : 182}" x2="${x}" y2="${arriba ? 140 : 160}" stroke="${col}" stroke-width="3"/>
+      <circle cx="${x}" cy="${y}" r="20" fill="${col}"/><text x="${x}" y="${y + 7}" text-anchor="middle" font-size="20">${EMOJI[c.rubros?.nombre] || '🏪'}</text>
+      <text x="${x}" y="${arriba ? y - 30 : y + 42}" text-anchor="middle" font-size="17" font-weight="600" fill="#2C2C2A">${esc(c.nombre)}</text>
+      <text x="${x}" y="${arriba ? y - 50 : y + 61}" text-anchor="middle" font-size="14" fill="#77756F">${c.altura}</text></g></a>`;
+  }).join('');
+  $app.innerHTML = barra() + `<main class="wrap mapa">
+    <h1>La calle</h1><p class="sub">Las Flores, de Av. Mitre a las vías. Tocá un local para entrar.</p>
+    <div class="card" style="margin-top:12px;padding:6px 0;overflow-x:auto"><svg viewBox="0 0 ${W} 320" style="min-width:640px" role="img" aria-label="Mapa de la calle Las Flores">
+      <rect x="40" y="140" width="920" height="40" rx="6" fill="#E6E2D9"/>
+      <line x1="40" y1="160" x2="960" y2="160" stroke="#fff" stroke-width="3" stroke-dasharray="14 12"/>
+      <text x="40" y="20" font-size="14" fill="#77756F">Mano impar</text><text x="40" y="312" font-size="14" fill="#77756F">Mano par</text>
+      <text x="${x0 - 30}" y="${165}" text-anchor="end" font-size="13" fill="#77756F" transform="rotate(-90 ${x0 - 38} 160)">Av. Mitre</text>
+      <text x="975" y="165" font-size="13" fill="#77756F" transform="rotate(90 975 160)" text-anchor="middle">Vías</text>
+      ${[100,200,300,400,500,600].map(a => `<text x="${X(a)}" y="132" text-anchor="middle" font-size="11" fill="#B4B2A9">${a}</text>`).join('')}
+      ${pins}</svg></div>
+    <p class="sub" style="margin-top:10px">En color, los que están abiertos ahora. En gris, los cerrados.</p>
+    <h2>Por altura</h2><div class="locs">${D.comercios.map(tarjetaLocal).join('')}</div></main>`;
+}
+
+// ---------- 4. Actividad ----------
+async function pActividad() {
+  marcarTab('actividad');
+  if (!SESION) { $app.innerHTML = barra() + `<main class="wrap"><h1>Mi actividad</h1><div class="card empty" style="margin-top:14px">
+      Acá vas a ver tus compras en los locales, lo que apartaste y tus turnos.<br><br>Para eso necesitás entrar con tu celular.<br><br><a class="btn main" href="#/perfil">Entrar con mi celular</a></div></main>`; return; }
+  $app.innerHTML = barra() + `<main class="wrap"><h1>Mi actividad</h1><div class="loading">Cargando…</div></main>`;
+  const {data, error} = await sb.from('mi_actividad').select('*').eq('perfil_id', SESION.user.id).order('fecha', {ascending: false});
+  const {data: ap} = await sb.from('apartados').select('id,codigo,estado,vence,variantes(talle,productos(nombre))').eq('perfil_id', SESION.user.id);
+  const apPorId = Object.fromEntries((ap || []).map(a => [a.id, a]));
+  const ICON = {compra_en_local: ['🧾','Compra en el local'], consulta: ['💬','Consulta por WhatsApp']};
+  const filas = (data || []).map(r => {
+    const c = D.porId[r.comercio_id]; const a = r.tipo.startsWith('apartado') ? apPorId[r.ref] : null;
+    const [ic, t] = ICON[r.tipo] || (r.tipo.startsWith('apartado') ? ['🛍️', 'Apartado ' + r.tipo.split('_')[1]] : r.tipo.startsWith('turno') ? ['📅', 'Turno ' + r.tipo.split('_')[1]] : ['•', r.tipo]);
+    return `<div class="card act"><span class="ic">${ic}</span><span style="flex:1"><b>${esc(t)}</b><br><small class="muted">${esc(c?.nombre || '')} · ${new Date(r.fecha).toLocaleDateString('es-AR')}${a ? ` · ${esc(a.variantes?.productos?.nombre || '')} ${esc(a.variantes?.talle || '')} · código ${esc(a.codigo)}` : ''}</small></span>${r.puede_opinar ? '<span class="pill open">Podés opinar</span>' : ''}</div>`;
+  }).join('');
+  $app.querySelector('main').innerHTML = `<h1>Mi actividad</h1>${error ? `<div class="err">${esc(error.message)}</div>` : ''}
+    <div class="locs" style="margin-top:14px">${filas || '<div class="card empty">Todavía no hay nada. Cuando compres en un local mostrando tu QR, o apartes algo, aparece acá.</div>'}</div>`;
+}
+
+// ---------- 5. Perfil: entrar con el celular, tarjeta de puntos ----------
+let telPendiente = '';
+const normalizarTel = t => { const d = t.replace(/\D/g, ''); return d.startsWith('54') ? d : d.startsWith('0') ? '549' + d.slice(1).replace(/^(\d{2,4})15/, '$1') : '549' + d; };
+async function pPerfil(msg = '') {
+  marcarTab('perfil');
+  if (!SESION) {
+    $app.innerHTML = barra() + `<main class="wrap"><h1>Tu cuenta</h1>
+      <p class="sub">Mirar, buscar y consultar no necesita cuenta. Con tu celular sumás puntos en los locales, apartás y seguís a los que te gustan.</p>
+      ${!telPendiente ? `<form id="f1"><div class="field"><label for="tel">Tu celular</label><input id="tel" type="tel" inputmode="numeric" placeholder="11 2345 6789" autocomplete="tel"></div>
+        <button class="btn main block">Mandarme el código</button></form>`
+      : `<form id="f2"><p style="margin-top:14px">Te mandamos un código al <b>+${esc(telPendiente)}</b>.</p>
+        <div class="field"><label for="cod">Código de 6 números</label><input id="cod" inputmode="numeric" maxlength="6" autocomplete="one-time-code" placeholder="••••••"></div>
+        <button class="btn main block">Entrar</button><p style="margin-top:12px"><a href="#" id="otro">Usar otro número</a></p></form>`}
+      ${msg}
+      ${MODO_PRUEBA ? '<div class="card" style="padding:12px 14px;margin-top:18px;font-size:13.5px;line-height:1.5"><b>Modo prueba:</b> no se mandan mensajes reales. Podés usar 11 0000 0001 con el código 111111.</div>' : ''}
+    </main>`;
+    const f1 = document.getElementById('f1'), f2 = document.getElementById('f2');
+    if (f1) f1.onsubmit = async ev => { ev.preventDefault();
+      const tel = normalizarTel(document.getElementById('tel').value);
+      if (tel.length < 12) return pPerfil('<div class="err">Revisá el número: código de área y número, sin el 15.</div>');
+      f1.querySelector('button').disabled = true;
+      const {error} = await sb.auth.signInWithOtp({phone: '+' + tel});
+      if (error) return pPerfil(`<div class="err">${esc(error.message)}</div>`);
+      telPendiente = tel; pPerfil();
+    };
+    if (f2) { document.getElementById('otro').onclick = e => { e.preventDefault(); telPendiente = ''; pPerfil(); };
+      f2.onsubmit = async ev => { ev.preventDefault();
+        f2.querySelector('button').disabled = true;
+        const {data, error} = await sb.auth.verifyOtp({phone: '+' + telPendiente, token: document.getElementById('cod').value.trim(), type: 'sms'});
+        if (error) return pPerfil('<div class="err">El código no es correcto o ya venció. Probá de nuevo.</div>');
+        SESION = data.session; telPendiente = ''; pPerfil();
+      }; }
+    return;
+  }
+  const uid = SESION.user.id;
+  const [{data: perfil}, {data: saldo}, {data: sigo}] = await Promise.all([
+    sb.from('perfiles').select('nombre,telefono,creado').eq('id', uid).maybeSingle(),
+    sb.from('saldo_puntos').select('saldo').eq('perfil_id', uid).maybeSingle(),
+    sb.from('seguimientos').select('comercio_id').eq('perfil_id', uid)]);
+  $app.innerHTML = barra() + `<main class="wrap"><h1>Hola${perfil?.nombre ? ', ' + esc(perfil.nombre.split(' ')[0]) : ''}</h1>
+    <p class="sub">+${esc(perfil?.telefono || SESION.user.phone || '')}</p>
+    <div class="tarjeta" style="margin-top:14px"><div class="row" style="justify-content:space-between"><b style="font-size:17px">Tarjeta Las Flores</b><span><b style="font-size:22px">${saldo?.saldo ?? 0}</b> puntos</span></div>
+      <div class="qr" id="qr"></div><p style="text-align:center;font-size:13.5px;opacity:.95">Mostralo en la caja para sumar puntos.<br>Cambia cada minuto: una captura no sirve.</p></div>
+    <form id="fn"><div class="field"><label for="nom">Tu nombre (así aparece en tus opiniones: “Laura G.”)</label><input id="nom" value="${esc(perfil?.nombre || '')}" placeholder="Nombre y apellido"></div>
+      <button class="btn line block">Guardar nombre</button></form>${msg}
+    <h2>Locales que seguís</h2><div class="locs">${(sigo || []).map(s => D.porId[s.comercio_id]).filter(Boolean).map(tarjetaLocal).join('') || '<div class="card empty">Todavía no seguís ningún local. Entrá a uno y tocá “Seguir”.</div>'}</div>
+    <h2>Intros de los locales</h2><div class="card" style="padding:12px 14px"><label class="row" style="justify-content:space-between"><span>Mostrar la presentación al entrar a un local</span><input type="checkbox" id="intros" ${prefIntros() ? 'checked' : ''}></label></div>
+    <button class="btn line block" id="salir" style="margin-top:22px">Salir de mi cuenta</button></main>`;
+  dibujarQR(uid);
+  document.getElementById('intros').onchange = e => { try { localStorage.setItem('lf-intros', e.target.checked ? 'si' : 'no'); } catch (_) {} };
+  document.getElementById('salir').onclick = async () => { await sb.auth.signOut(); SESION = null; pPerfil(); };
+  document.getElementById('fn').onsubmit = async ev => { ev.preventDefault();
+    const {error} = await sb.from('perfiles').update({nombre: document.getElementById('nom').value.trim()}).eq('id', uid);
+    pPerfil(error ? `<div class="err">${esc(errorTexto(error))}</div>` : '<div class="okmsg">Listo, guardamos tu nombre.</div>'); };
+}
+let qrTimer;
+function dibujarQR(uid) {
+  clearInterval(qrTimer);
+  const pintar = () => { const el = document.getElementById('qr'); if (!el || !window.qrcode) return clearInterval(qrTimer);
+    const q = qrcode(0, 'M'); q.addData(`LF:${uid}:${Math.floor(Date.now() / 6e4)}`); q.make(); el.innerHTML = q.createSvgTag({cellSize: 4, margin: 0}); };
+  pintar(); qrTimer = setInterval(pintar, 15000);
+}
+const prefIntros = () => { try { return localStorage.getItem('lf-intros') !== 'no'; } catch (_) { return true; } };
+
+// ---------- Página del local: se arma con su vidriera publicada ----------
+async function pLocal(slug) {
+  marcarTab('');
+  const c = D.comercios.find(x => x.slug === slug);
+  if (!c) { $app.innerHTML = barra('Las Flores', 'online', true) + '<div class="empty">No encontramos ese local.</div>'; return; }
+  const v = D.vidrieras[c.id]?.contenido || {};
+  const e = v.estilo || {}; const intro = v.intro || {};
+  const [fam, , modo] = usarFuente(e.tipografia);
+  const oscuro = e.fondo === 'oscuro', deColor = e.fondo === 'color';
+  const fondo = oscuro ? '#1E1D1B' : deColor ? mezclar(e.color, '#ffffff', .88) : '#ffffff';
+  const tinta = oscuro ? '#F2EFE9' : '#2C2C2A';
+  const suave = oscuro ? '#2B2A27' : mezclar(e.color || '#E8711D', '#ffffff', .9);
+  const rad = {rectos: '6px', suaves: '12px', redondeados: '20px'}[e.bordes] || '14px';
+  const emoji = EMOJI[c.rubros?.nombre] || '🏪';
+  const tex = textura(e.textura, e.color, c.nombre);
+
+  $app.innerHTML = barra(c.nombre, 'en Las Flores', true) + `<div class="tienda" id="tienda" style="--a:${esc(e.color)};--fondo:${fondo};--tinta:${tinta};--suave:${suave};--rad:${rad};--fn:${fam},serif">
+    <div class="loading">Cargando ${esc(c.nombre)}…</div></div>`;
+  registrar(c.id, 'vista');
+  if (intro.tipo && intro.tipo !== 'ninguna' && prefIntros() && !sessionStorageGet('intro-' + c.id)) mostrarIntro(c, intro, e, fam, modo, fondo, tinta);
+
+  const [prods, servs, ops, hist, sigo] = await Promise.all([
+    sb.from('productos').select('id,nombre,descripcion,precio,precio_efectivo,destacado,variantes(id,talle,color,stock)').eq('comercio_id', c.id).order('destacado', {ascending: false}).order('precio', {ascending: false}),
+    sb.from('servicios').select('*').eq('comercio_id', c.id).order('precio'),
+    sb.from('opiniones_publicas').select('*').eq('comercio_id', c.id).order('publicado_en', {ascending: false}).limit(10),
+    sb.from('historias_vigentes').select('*').eq('comercio_id', c.id),
+    SESION ? sb.from('seguimientos').select('comercio_id').eq('perfil_id', SESION.user.id).eq('comercio_id', c.id) : Promise.resolve({data: []})]);
+  const P = prods.data || [], S = servs.data || [], O = ops.data || [];
+  const promos = D.promos.filter(p => p.comercio_id === c.id);
+  const mesas = D.vivo.find(x => x.comercio_id === c.id && x.tipo === 'mesas');
+  const sigue = (sigo.data || []).length > 0;
+  const nombreTxt = modo === 'upper' ? c.nombre.toUpperCase() : c.nombre;
+  const estiloNombre = modo === 'italic' ? 'font-style:italic;' : '';
+  const centro = e.cabecera_alineacion === 'centro' ? 'centro' : '';
+  const tarjeta = e.tarjeta || 'grilla';
+  const prodHTML = (p, clase = '') => `<button class="prod ${clase}" data-p="${p.id}"><div class="img">${emoji}</div><div class="info"><b>${esc(p.nombre)}</b><span>${pesos(p.precio)}</span></div></button>`;
+
+  const B = {
+    abierto: () => '',   // ya va en la cabecera
+    carrusel: b => P.length ? `<section><h3>${esc(b.titulo || 'Lo más pedido')}</h3><div class="hs">${P.slice(0, 8).map(p => prodHTML(p)).join('')}</div></section>` : '',
+    lookbook: b => P.length ? `<section><h3>${esc(b.titulo || 'Lookbook')}</h3><div class="prods lookbook">${P.map(p => prodHTML(p)).join('')}</div></section>` : '',
+    probador: () => P.length ? `<section><div class="box row"><span style="font-size:34px">🧍</span><span style="flex:1"><b>Probador</b><br><small>Vestí el maniquí con las prendas del local. Muy pronto.</small></span></div></section>` : '',
+    promo: () => promos.map(p => `<section><div class="promoL"><b>${esc(p.titulo)}</b><small>${esc(p.detalle || '')}</small><div style="margin-top:8px;font-size:13px;font-weight:600">${falta(p.hasta)}</div></div></section>`).join(''),
+    semaforo: b => mesas ? `<section><h3>${esc(b.titulo || 'Mesas libres')}</h3><div class="box row"><span class="sem" style="width:18px;height:18px;background:${{hay_lugar:'#1D9E75',pocas:'#EF9F27',lleno:'#D85A30'}[mesas.estado]}"></span>
+      <b style="flex:1">${{hay_lugar:'Hay lugar',pocas:'Quedan pocas mesas',lleno:'Lleno por ahora'}[mesas.estado]}${mesas.cantidad ? ` · ${mesas.cantidad} mesas` : ''}</b><small>actualizado ${new Date(mesas.actualizado).toLocaleTimeString('es-AR',{hour:'2-digit',minute:'2-digit'})}</small></div></section>` : '',
+    horno: () => '',
+    turnos: b => S.length ? `<section><h3>${esc(b.titulo || 'Turnos')}</h3><div class="box">${S.map(s => `<div class="serv"><span class="t"><b>${esc(s.nombre)}</b><br><small>${s.duracion_min} min${s.precio ? ' · ' + pesos(s.precio) : ' · sin cargo'}</small></span><button class="btn line" data-turno="${s.id}">Pedir turno</button></div>`).join('')}</div></section>` : '',
+    historias: b => (hist.data || []).length ? `<section><h3>${esc(b.titulo || 'Historias')}</h3></section>` : '',
+    galeria: () => '',
+    opiniones: b => `<section><h3>${esc(b.titulo || 'Opiniones')}</h3><div class="box">${O.length ? `<p><b class="estrellas">${'★'.repeat(Math.round(D.calif[c.id]?.promedio || 0))}</b> ${D.calif[c.id]?.promedio ?? ''} · ${O.length} opinión${O.length > 1 ? 'es' : ''} de clientes</p>`
+      + O.map(o => `<div class="op"><span class="estrellas">${'★'.repeat(o.estrellas)}${'☆'.repeat(5 - o.estrellas)}</span> <b>${esc(o.autor)}</b> <small>· compró en el local</small><p>${esc(o.texto || '')}</p>${o.respuesta_local ? `<p style="margin-top:6px;font-size:14px"><b>Respuesta del local:</b> ${esc(o.respuesta_local)}</p>` : ''}</div>`).join('')
+      : '<small>Todavía no hay opiniones. Solo pueden opinar quienes compraron o fueron atendidos en el local.</small>'}</div></section>`,
+    mapa: b => `<section><h3>${esc(b.titulo || 'Cómo llegar')}</h3><div class="box"><div class="calle"><span class="pin" style="left:${Math.min(95, Math.max(5, c.altura / 7))}%"></span></div>
+      <b>Las Flores ${c.altura}</b> · mano ${c.mano} · Wilde<br><small>Hoy: ${horarioHoy(c.id)}</small><div style="margin-top:10px"><a class="btn line block" id="llegar2" href="${comoLlegar(c)}" target="_blank" rel="noopener">Abrir en el mapa</a></div></div></section>`,
+    calle: () => '', clip: () => '', youtube: () => '', playlist: () => '', cupos: () => '', encuesta: () => '', historia: () => '', equipo: () => ''
+  };
+  const bloques = (v.bloques || []).slice().sort((a, b) => a.orden - b.orden);
+  const cuerpo = bloques.map(b => (B[b.tipo] || (() => ''))(b)).join('')
+    || (P.length ? `<section><h3>Productos</h3><div class="prods ${tarjeta}">${P.map(p => prodHTML(p)).join('')}</div></section>` : '');
+  const catalogo = P.length && !bloques.some(b => ['lookbook'].includes(b.tipo))
+    ? `<section><h3>${c.rubros?.modulo === 'menu' ? 'Menú' : 'Todo lo del local'}</h3><div class="prods ${tarjeta}">${P.map(p => prodHTML(p)).join('')}</div></section>` : '';
+
+  const cab = e.cabecera || 'escudo';
+  document.getElementById('tienda').innerHTML = `
+    <div class="cab ${cab} ${centro}">${tex}
+      ${cab === 'portada' ? `<div class="band">${emoji}${emoji}</div>` : ''}${cab === 'escudo' ? `<div class="esc">${esc(c.nombre[0])}</div>` : ''}
+      <div class="nom" style="${estiloNombre}">${esc(nombreTxt)}</div>
+      <div class="meta">${esc(c.categorias_comercio?.nombre || c.rubros?.nombre)} · Las Flores ${c.altura}</div>
+      <div class="estado">${estadoPill(c.id)}${D.calif[c.id] ? `<span class="pill" style="background:#FFF4D6;color:#7A5A00">★ ${D.calif[c.id].promedio}</span>` : ''}
+        ${SESION ? `<button class="pill" id="seguir" style="background:${sigue ? '#2C2C2A' : '#fff'};color:${sigue ? '#fff' : '#2C2C2A'};border:1px solid #2C2C2A">${sigue ? '✓ Siguiendo' : '+ Seguir'}</button>` : ''}</div>
+    </div>
+    ${cuerpo}${catalogo}
+    <section><small style="opacity:.7">Horario de hoy: ${horarioHoy(c.id)}</small></section>
+    <div class="fijo"><a class="btn wa" id="wa" href="#">Consultar por WhatsApp</a><a class="btn line" id="llegar" href="${comoLlegar(c)}" target="_blank" rel="noopener">Cómo llegar</a></div>`;
+
+  const T = document.getElementById('tienda');
+  T.querySelectorAll('[data-p]').forEach(b => b.onclick = () => hojaProducto(c, P.find(p => p.id == b.dataset.p), e));
+  T.querySelectorAll('[data-turno]').forEach(b => b.onclick = () => abrirWhatsApp(c, null, `Hola! Quería pedir un turno para ${S.find(s => s.id == b.dataset.turno)?.nombre}.`));
+  document.getElementById('wa').onclick = ev => { ev.preventDefault(); abrirWhatsApp(c); };
+  ['llegar', 'llegar2'].forEach(id => { const a = document.getElementById(id); if (a) a.addEventListener('click', () => registrar(c.id, 'como_llegar')); });
+  const bs = document.getElementById('seguir');
+  if (bs) bs.onclick = async () => {
+    const q = sigue ? sb.from('seguimientos').delete().eq('perfil_id', SESION.user.id).eq('comercio_id', c.id)
+                    : sb.from('seguimientos').insert({perfil_id: SESION.user.id, comercio_id: c.id});
+    const {error} = await q; if (!error) pLocal(slug); else alertaSuave(errorTexto(error));
+  };
+}
+function sessionStorageGet(k) { try { return sessionStorage.getItem(k); } catch (_) { return null; } }
+function mezclar(a, b, t) {
+  const h = x => [1, 3, 5].map(i => parseInt(x.slice(i, i + 2), 16));
+  const [r1, g1, b1] = h(a || '#E8711D'), [r2, g2, b2] = h(b);
+  return '#' + [r1 + (r2 - r1) * t, g1 + (g2 - g1) * t, b1 + (b2 - b1) * t].map(v => Math.round(v).toString(16).padStart(2, '0')).join('');
+}
+function textura(t, col, nombre) {
+  const c = mezclar(col || '#E8711D', '#ffffff', .75);
+  const fondos = {
+    papel: `radial-gradient(${c} 0.7px, transparent 0.8px) 0 0/7px 7px, radial-gradient(${c} 0.6px, transparent 0.7px) 3px 4px/11px 11px`,
+    rayas: `repeating-linear-gradient(135deg, ${c} 0 2px, transparent 2px 14px)`,
+    puntos: `radial-gradient(${c} 2px, transparent 2.5px) 0 0/18px 18px`
+  };
+  if (t === 'logo') return `<div class="tex" style="display:flex;align-items:center;justify-content:flex-end;font-size:160px;color:${c};font-weight:700;padding-right:8px">${esc(nombre[0])}</div>`;
+  return fondos[t] ? `<div class="tex" style="background:${fondos[t]}"></div>` : '';
+}
+function mostrarIntro(c, intro, e, fam, modo, fondo, tinta) {
+  try { sessionStorage.setItem('intro-' + c.id, '1'); } catch (_) {}
+  const dur = Math.min(3000, intro.duracion_ms || 2500);
+  const d = document.createElement('div');
+  d.className = 'intro ' + (intro.tipo === 'persiana' || intro.tipo === 'telon' ? 'persiana' : '');
+  d.style.background = e.color; d.style.color = '#fff';
+  const txt = intro.tipo === 'frase' && intro.texto ? intro.texto : c.nombre;
+  d.innerHTML = `<div class="n" style="font-family:${fam},serif;${modo === 'italic' ? 'font-style:italic;' : ''}">${esc(modo === 'upper' ? txt.toUpperCase() : txt)}</div><button class="saltar">Saltar ›</button>`;
+  document.body.appendChild(d);
+  const fin = () => { d.style.transition = 'opacity .35s'; d.style.opacity = 0; setTimeout(() => d.remove(), 360); registrar(c.id, 'intro_salteada'); };
+  d.querySelector('.saltar').onclick = fin; d.onclick = fin;
+  setTimeout(() => { if (d.isConnected) { d.style.transition = 'opacity .35s'; d.style.opacity = 0; setTimeout(() => d.remove(), 360); } }, dur);
+}
+function alertaSuave(t) { const d = document.createElement('div'); d.className = 'err'; d.style.cssText = 'position:fixed;left:16px;right:16px;bottom:90px;z-index:90;max-width:528px;margin:0 auto'; d.textContent = t; document.body.appendChild(d); setTimeout(() => d.remove(), 4000); }
+
+async function abrirWhatsApp(c, producto = null, texto = '') {
+  registrar(c.id, 'whatsapp', producto?.id ?? null);
+  let codigo = '';
+  try { const {data} = await sb.rpc('crear_consulta', {p_comercio: c.id, p_producto: producto?.id ?? null}); codigo = data || ''; } catch (_) {}
+  const msg = (texto || (producto ? `Hola! Vi en Las Flores online “${producto.nombre}” (${pesos(producto.precio)}). ¿Lo tienen?` : 'Hola! Los vi en Las Flores online.'))
+            + (codigo ? ` [${codigo}]` : '');
+  window.open(`https://wa.me/549${c.whatsapp.replace(/\D/g, '').replace(/^549?/, '')}?text=${encodeURIComponent(msg)}`, '_blank');
+}
+
+function hojaProducto(c, p, e) {
+  if (!p) return;
+  const vs = (p.variantes || []).filter(v => v.talle);
+  const sh = document.createElement('div'); sh.className = 'sheet';
+  sh.innerHTML = `<div class="in"><div class="big" style="background:${mezclar(e.color || '#E8711D', '#ffffff', .88)}">${EMOJI[c.rubros?.nombre] || '🏪'}</div>
+    <h2 style="margin:0">${esc(p.nombre)}</h2><p style="font-size:20px;font-weight:700;margin:4px 0">${pesos(p.precio)}${p.precio_efectivo ? ` <small class="muted" style="font-size:14px">· ${pesos(p.precio_efectivo)} en efectivo</small>` : ''}</p>
+    <p class="sub">${esc(c.nombre)} · Las Flores ${c.altura} · ${abierto(c.id) ? 'abierto ahora' : 'cerrado ahora'}</p>
+    ${vs.length ? `<p style="margin-top:14px;font-weight:600">Talles</p><div class="talles">${vs.map(v => `<button class="talle" data-v="${v.id}" ${v.stock > 0 ? '' : 'disabled'}>${esc(v.talle)}</button>`).join('')}</div>` : '<div style="height:14px"></div>'}
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <button class="btn wa block" id="pwa">Consultar por WhatsApp</button>
+      ${c.rubros?.modulo !== 'menu' ? `<button class="btn line block" id="papartar">Apartar hasta mañana</button>` : ''}
+      <div id="pmsg"></div><button class="btn block muted" id="pcerrar">Cerrar</button></div></div>`;
+  document.body.appendChild(sh);
+  let elegido = vs.length === 1 ? vs[0].id : (p.variantes || []).length === 1 ? p.variantes[0].id : null;
+  sh.querySelectorAll('.talle').forEach(b => b.onclick = () => { sh.querySelectorAll('.talle').forEach(x => x.classList.remove('on')); b.classList.add('on'); elegido = +b.dataset.v; });
+  sh.onclick = ev => { if (ev.target === sh) sh.remove(); };
+  sh.querySelector('#pcerrar').onclick = () => sh.remove();
+  sh.querySelector('#pwa').onclick = () => abrirWhatsApp(c, p, elegido && vs.length ? `Hola! Vi en Las Flores online “${p.nombre}” talle ${vs.find(v => v.id === elegido)?.talle}. ¿Lo tienen?` : '');
+  const ba = sh.querySelector('#papartar');
+  if (ba) ba.onclick = async () => {
+    const m = sh.querySelector('#pmsg');
+    if (!SESION) { m.innerHTML = '<div class="err">Para apartar entrá con tu celular. <a href="#/perfil">Entrar</a></div>'; return; }
+    if (!elegido) { m.innerHTML = '<div class="err">Elegí un talle primero.</div>'; return; }
+    ba.disabled = true;
+    const {data, error} = await sb.from('apartados').insert({perfil_id: SESION.user.id, comercio_id: c.id, variante_id: elegido}).select('codigo,vence').single();
+    m.innerHTML = error ? `<div class="err">${esc(errorTexto(error))}</div>`
+      : `<div class="okmsg">¡Listo! Te lo guardan hasta ${new Date(data.vence).toLocaleString('es-AR', {weekday:'long', hour:'2-digit', minute:'2-digit'})}. Mostrá el código <b>${esc(data.codigo)}</b> en el local.</div>`;
+    ba.disabled = false;
+  };
+}
+
+// ---------- Rutas ----------
+async function ruta() {
+  window.scrollTo(0, 0);
+  if (!D.listo) {
+    try { await cargarTodo(); }
+    catch (e) { $app.innerHTML = barra() + `<main class="wrap"><div class="err">No pudimos cargar Las Flores: ${esc(e.message || e)}</div></main>`; return; }
+  }
+  const h = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
+  const [a, b] = h.split('/');
+  if (a === 'l' && b) return pLocal(b);
+  if (a === 'buscar') return pBuscar(b || '');
+  if (a === 'mapa') return pMapa();
+  if (a === 'actividad') return pActividad();
+  if (a === 'perfil') return pPerfil();
+  return pInicio();
+}
+window.addEventListener('hashchange', ruta);
+const {data: {session}} = await sb.auth.getSession(); SESION = session;
+ruta();
+setInterval(() => { if (D.listo && (location.hash === '' || location.hash === '#/')) { cargarTodo().then(() => { if (location.hash === '' || location.hash === '#/') pInicio(); }); } }, 60000);
+</script>
+</body>
+</html>
