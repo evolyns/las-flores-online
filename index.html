@@ -172,6 +172,17 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = 'https://jvqunkkiypbvypgumxql.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_r1mug-RwM_3RCSoUQ6lo0Q_KiHiSHlZ';
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+// Si la sesión guardada venció y no se puede renovar, se cierra sola (si no, la base contesta "JWT expired")
+async function sesionValida() {
+  const {data: {session}} = await sb.auth.getSession();
+  if (!session) return null;
+  if (session.expires_at && session.expires_at * 1000 < Date.now() + 30000) {
+    const {data, error} = await sb.auth.refreshSession();
+    if (error || !data?.session) { await sb.auth.signOut({scope: 'local'}); return null; }
+    return data.session;
+  }
+  return session;
+}
 const MODO_PRUEBA = true;   // muestra el aviso de "locales de ejemplo"
 // Vista previa del editor de vidriera: recibe el borrador por mensaje y lo dibuja sin publicarlo
 const EN_PREVIA = window.top !== window;
@@ -743,7 +754,9 @@ async function ruta() {
   window.scrollTo(0, 0);
   if (!D.listo) {
     try { await cargarTodo(); }
-    catch (e) { $app.innerHTML = barra() + `<main class="wrap"><div class="err">No pudimos cargar Las Flores: ${esc(e.message || e)}</div></main>`; return; }
+    catch (e) {
+      if (/JWT|token/i.test(e?.message || '') && SESION) { await sb.auth.signOut({scope: 'local'}); SESION = null; return ruta(); }
+      $app.innerHTML = barra() + `<main class="wrap"><div class="err">No pudimos cargar Las Flores: ${esc(e.message || e)}</div></main>`; return; }
   }
   const h = decodeURIComponent(location.hash.replace(/^#\/?/, ''));
   const [a, b] = h.split('/');
@@ -756,7 +769,7 @@ async function ruta() {
   return pInicio();
 }
 window.addEventListener('hashchange', ruta);
-const {data: {session}} = await sb.auth.getSession(); SESION = session;
+const session = await sesionValida(); SESION = session;
 ruta();
 conectarAvisos();
 setInterval(() => { if (D.listo && (location.hash === '' || location.hash === '#/')) { cargarTodo().then(() => { if (location.hash === '' || location.hash === '#/') pInicio(); }); } }, 60000);

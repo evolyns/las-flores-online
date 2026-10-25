@@ -61,6 +61,17 @@ El QR lleva directo a la página del local en Las Flores online.</p>
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
 const sb = createClient('https://jvqunkkiypbvypgumxql.supabase.co', 'sb_publishable_r1mug-RwM_3RCSoUQ6lo0Q_KiHiSHlZ');
+// Si la sesión guardada venció y no se puede renovar, se cierra sola (si no, la base contesta "JWT expired")
+async function sesionValida() {
+  const {data: {session}} = await sb.auth.getSession();
+  if (!session) return null;
+  if (session.expires_at && session.expires_at * 1000 < Date.now() + 30000) {
+    const {data, error} = await sb.auth.refreshSession();
+    if (error || !data?.session) { await sb.auth.signOut({scope: 'local'}); return null; }
+    return data.session;
+  }
+  return session;
+}
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const BASE = location.href.replace(/carteles\.html.*$/, '');
 
@@ -73,7 +84,7 @@ function qrSvg(texto) {
 const marca = '<div class="marca"><i>LF</i>Las Flores online</div>';
 
 async function iniciar() {
-  const {data: {session}} = await sb.auth.getSession();
+  const session = await sesionValida();
   const pedido = +new URLSearchParams(location.search).get('c');
   let locales = [], mod = false;
   if (session) {

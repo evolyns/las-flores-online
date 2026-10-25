@@ -113,6 +113,17 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 const SUPABASE_URL = 'https://jvqunkkiypbvypgumxql.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_r1mug-RwM_3RCSoUQ6lo0Q_KiHiSHlZ';
 const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+// Si la sesión guardada venció y no se puede renovar, se cierra sola (si no, la base contesta "JWT expired")
+async function sesionValida() {
+  const {data: {session}} = await sb.auth.getSession();
+  if (!session) return null;
+  if (session.expires_at && session.expires_at * 1000 < Date.now() + 30000) {
+    const {data, error} = await sb.auth.refreshSession();
+    if (error || !data?.session) { await sb.auth.signOut({scope: 'local'}); return null; }
+    return data.session;
+  }
+  return session;
+}
 const MODO_PRUEBA = true;
 
 const $app = document.getElementById('app');
@@ -195,7 +206,7 @@ async function contarPendientes() {
 
 // ---------- Entrar ----------
 async function iniciar() {
-  const {data: {session}} = await sb.auth.getSession(); S = session;
+  const session = await sesionValida(); S = session;
   const caja = (t, p) => { $app.innerHTML = `<div class="top"><span class="lf">LF</span><b>Moderación</b></div><main style="max-width:520px;margin:0 auto"><h1>${t}</h1>${p}</main>`; };
   if (!S) {
     caja('Panel del moderador', `<p class="sub">Entrá primero con tu celular en la app.</p><a class="btn main" style="margin-top:16px" href="./#/perfil">Entrar con mi celular</a>

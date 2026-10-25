@@ -91,6 +91,17 @@ a{color:inherit}
 <script type="module">
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
 const sb = createClient('https://jvqunkkiypbvypgumxql.supabase.co', 'sb_publishable_r1mug-RwM_3RCSoUQ6lo0Q_KiHiSHlZ');
+// Si la sesión guardada venció y no se puede renovar, se cierra sola (si no, la base contesta "JWT expired")
+async function sesionValida() {
+  const {data: {session}} = await sb.auth.getSession();
+  if (!session) return null;
+  if (session.expires_at && session.expires_at * 1000 < Date.now() + 30000) {
+    const {data, error} = await sb.auth.refreshSession();
+    if (error || !data?.session) { await sb.auth.signOut({scope: 'local'}); return null; }
+    return data.session;
+  }
+  return session;
+}
 const $app = document.getElementById('app');
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const errorTexto = e => (e?.message || String(e)).replace(/^.*?: /, '');
@@ -132,7 +143,7 @@ const distancia = (a, b) => Math.sqrt([1, 3, 5].reduce((s, j) => s + (parseInt(a
 
 // ---------- Entrar ----------
 async function iniciar() {
-  const {data: {session}} = await sb.auth.getSession(); S = session;
+  const session = await sesionValida(); S = session;
   if (!S) { $app.innerHTML = `<div class="centrado"><div class="box"><h2>Editor de vidriera</h2><p class="sub" style="margin:8px 0 16px">Entrá primero con tu celular en la app. El editor es para el dueño del local.</p><a class="btn main" href="./#/perfil">Entrar</a></div></div>`; return false; }
   const [{data}, {data: yo}, {data: pl}] = await Promise.all([
     sb.from('comercio_usuarios').select('rol, comercios(id,nombre,slug,plan_id,rubros(nombre))').eq('usuario_id', S.user.id),
