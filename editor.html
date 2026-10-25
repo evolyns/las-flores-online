@@ -113,6 +113,8 @@ const TEXTURAS = ['lisa','papel','rayas','puntos','logo'];
 const INTROS = [['ninguna','Sin intro'],['logo','Logo'],['frase','Frase'],['persiana','Persiana'],['telon','Telón'],['video','Video']];
 
 // ---------- Estado ----------
+let PLANES = [];
+const ordenPlan = id => PLANES.find(p => p.id === id)?.orden ?? id;
 let S, LOCALES = [], L, E = {}, I = {}, B = [], TIPOS = [], OTROS = [], VERS = [], seccion = 'estilo', sel = null, vista = 'cel', guardando = null, msgDer = '';
 const cargadas = new Set();
 function fuente(k) {
@@ -132,13 +134,22 @@ const distancia = (a, b) => Math.sqrt([1, 3, 5].reduce((s, j) => s + (parseInt(a
 async function iniciar() {
   const {data: {session}} = await sb.auth.getSession(); S = session;
   if (!S) { $app.innerHTML = `<div class="centrado"><div class="box"><h2>Editor de vidriera</h2><p class="sub" style="margin:8px 0 16px">Entrá primero con tu celular en la app. El editor es para el dueño del local.</p><a class="btn main" href="./#/perfil">Entrar</a></div></div>`; return false; }
-  const {data} = await sb.from('comercio_usuarios').select('rol, comercios(id,nombre,slug,plan_id,rubros(nombre))').eq('usuario_id', S.user.id);
+  const [{data}, {data: yo}, {data: pl}] = await Promise.all([
+    sb.from('comercio_usuarios').select('rol, comercios(id,nombre,slug,plan_id,rubros(nombre))').eq('usuario_id', S.user.id),
+    sb.from('perfiles').select('es_moderador').eq('id', S.user.id).maybeSingle(),
+    sb.from('planes').select('id,nombre,orden')]);
+  PLANES = pl || [];
   LOCALES = (data || []).filter(r => r.comercios && r.rol === 'duenio').map(r => r.comercios);
+  if (yo?.es_moderador) {   // el moderador arma la primera vidriera junto con el dueño
+    const {data: todos} = await sb.from('comercios').select('id,nombre,slug,plan_id,rubros(nombre)').order('nombre');
+    LOCALES = todos || [];
+  }
+  const pedido = +new URLSearchParams(location.search).get('c');
   if (!LOCALES.length) { $app.innerHTML = `<div class="centrado"><div class="box"><h2>Solo para dueños</h2><p class="sub" style="margin:8px 0 16px">La vidriera la cambia el dueño del local. Si trabajás en uno, pedile que la edite desde su cuenta.</p><a class="btn line" href="panel.html">Volver al panel</a></div></div>`; return false; }
   const [t, o] = await Promise.all([sb.from('bloque_tipos').select('*'), sb.from('vidriera_publicada').select('comercio_id,slug,contenido')]);
   TIPOS = t.data || []; OTROS = o.data || [];
   let g; try { g = +localStorage.getItem('lf-panel-local'); } catch (_) {}
-  await abrir(LOCALES.find(x => x.id === g)?.id || LOCALES[0].id);
+  await abrir(LOCALES.find(x => x.id === pedido)?.id || LOCALES.find(x => x.id === g)?.id || LOCALES[0].id);
   return true;
 }
 async function abrir(id) {
@@ -270,7 +281,7 @@ function pintarBloques() {
     ${b ? `<h3>Bloque elegido</h3><div class="field"><label>Título</label><input id="btit" value="${esc(b.titulo || '')}" placeholder="${esc(nombreTipo(b.tipo))}"></div>
       <button class="btn line sm" id="bquitar">Quitar de la página</button>` : ''}
     <h3>Agregar</h3><div class="lib">${TIPOS.filter(t => !usados.has(t.codigo)).sort((a, b) => a.grupo.localeCompare(b.grupo)).map(t =>
-      `<button data-add="${t.codigo}">+ ${esc(t.nombre)}${t.plan_minimo > L.plan_id ? ' <small>plan completo</small>' : ''}</button>`).join('')}</div>`;
+      `<button data-add="${t.codigo}">+ ${esc(t.nombre)}${ordenPlan(t.plan_minimo) > ordenPlan(L.plan_id) ? ` <small>plan ${esc(PLANES.find(p => p.id === t.plan_minimo)?.nombre || '')}</small>` : ''}</button>`).join('')}</div>`;
 }
 async function reordenar(lista) {
   lista.forEach((x, i) => x.orden = i + 1);

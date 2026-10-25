@@ -250,7 +250,7 @@ async function registrar(cid, evento, producto_id = null) {
 const D = {listo: false};
 async function cargarTodo() {
   const [com, vid, hor, pro, viv, cal] = await Promise.all([
-    sb.from('comercios').select('id,nombre,slug,altura,mano,whatsapp,instagram,rubros(nombre,modulo),categorias_comercio(nombre)').order('altura'),
+    sb.from('comercios').select('id,nombre,slug,altura,mano,whatsapp,instagram,estado,rubros(nombre,modulo),categorias_comercio(nombre)').order('altura'),
     sb.from('vidriera_publicada').select('comercio_id,slug,contenido'),
     sb.from('horarios').select('*'),
     sb.from('promos').select('*').gt('hasta', new Date().toISOString()).order('hasta'),
@@ -259,7 +259,8 @@ async function cargarTodo() {
   ]);
   const err = [com, vid, hor, pro, viv, cal].find(r => r.error);
   if (err) throw err.error;
-  D.comercios = com.data; D.horarios = hor.data; D.promos = pro.data; D.vivo = viv.data;
+  // El dueño y el moderador ven también los locales pendientes, pero solo en la vista previa del editor
+  D.comercios = com.data.filter(c => c.estado === 'activo' || EN_PREVIA); D.horarios = hor.data; D.promos = pro.data; D.vivo = viv.data;
   D.vidrieras = Object.fromEntries(vid.data.map(v => [v.comercio_id, v]));
   D.calif = Object.fromEntries(cal.data.map(c => [c.comercio_id, c]));
   D.porId = Object.fromEntries(D.comercios.map(c => [c.id, c]));
@@ -431,7 +432,7 @@ async function pPerfil(msg = '') {
   }
   const uid = SESION.user.id;
   const [{data: perfil}, {data: saldo}, {data: sigo}, {data: equipo}] = await Promise.all([
-    sb.from('perfiles').select('nombre,telefono,creado').eq('id', uid).maybeSingle(),
+    sb.from('perfiles').select('nombre,telefono,creado,es_moderador').eq('id', uid).maybeSingle(),
     sb.from('saldo_puntos').select('saldo').eq('perfil_id', uid).maybeSingle(),
     sb.from('seguimientos').select('comercio_id').eq('perfil_id', uid),
     sb.from('comercio_usuarios').select('comercio_id').eq('usuario_id', uid)]);
@@ -442,6 +443,7 @@ async function pPerfil(msg = '') {
     <form id="fn"><div class="field"><label for="nom">Tu nombre (así aparece en tus opiniones: “Laura G.”)</label><input id="nom" value="${esc(perfil?.nombre || '')}" placeholder="Nombre y apellido"></div>
       <button class="btn line block">Guardar nombre</button></form>${msg}
     ${(equipo || []).length ? '<a class="btn main block" style="margin-top:16px" href="panel.html">Abrir el panel de mi local</a>' : ''}
+    ${perfil?.es_moderador ? '<a class="btn dark block" style="margin-top:10px" href="moderador.html">Panel del moderador</a>' : ''}
     <h2>Locales que seguís</h2><div class="locs">${(sigo || []).map(s => D.porId[s.comercio_id]).filter(Boolean).map(tarjetaLocal).join('') || '<div class="card empty">Todavía no seguís ningún local. Entrá a uno y tocá “Seguir”.</div>'}</div>
     <h2>Intros de los locales</h2><div class="card" style="padding:12px 14px"><label class="row" style="justify-content:space-between"><span>Mostrar la presentación al entrar a un local</span><input type="checkbox" id="intros" ${prefIntros() ? 'checked' : ''}></label></div>
     <button class="btn line block" id="salir" style="margin-top:22px">Salir de mi cuenta</button></main>`;

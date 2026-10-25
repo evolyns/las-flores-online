@@ -1,0 +1,673 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#2C2C2A">
+<title>Moderación · Las Flores online</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--o:#E8711D;--o2:#FCE6D3;--ink:#2C2C2A;--mute:#77756F;--line:#E8E4DC;--bg:#F6F4EF;--ok:#1D9E75;--bad:#D85A30}
+*{box-sizing:border-box;margin:0;padding:0}
+html,body{background:var(--bg);color:var(--ink);font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;font-size:15px}
+button{font:inherit;cursor:pointer;border:0;background:none;color:inherit}
+input,select,textarea{font:inherit}
+a{color:inherit}
+[hidden]{display:none!important}
+.top{position:sticky;top:0;z-index:20;background:var(--ink);color:#fff;padding:10px 18px;display:flex;align-items:center;gap:10px}
+.top .lf{width:30px;height:30px;border-radius:9px;background:var(--o);font-weight:700;font-size:13px;display:flex;align-items:center;justify-content:center;flex:none}
+.top b{font-size:16px;flex:1}
+.top a{font-size:13px;opacity:.85;text-decoration:none}
+.demo{background:#FFF7E8;color:#8A5A12;font-size:12.5px;text-align:center;padding:6px 12px}
+.lay{display:grid;grid-template-columns:210px 1fr;min-height:calc(100vh - 50px)}
+.side{border-right:1px solid var(--line);background:#fff;padding:14px 10px;display:flex;flex-direction:column;gap:2px}
+.side a{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:10px;text-decoration:none;font-weight:500;color:#4A4945}
+.side a.on{background:var(--o2);color:#8A3E08;font-weight:600}
+.side a i{font-style:normal;width:20px;text-align:center}
+.side a em{margin-left:auto;font-style:normal;background:var(--bad);color:#fff;font-size:11.5px;font-weight:700;border-radius:99px;padding:1px 7px}
+main{padding:22px 26px 40px;max-width:1100px;width:100%;min-width:0}
+h1{font-size:23px;letter-spacing:-.3px;margin:0 0 4px}
+h2{font-size:16px;margin:24px 0 10px}
+h3{font-size:15px;margin:0 0 10px}
+.sub{color:var(--mute);font-size:14px}
+.card{background:#fff;border-radius:14px;border:1px solid var(--line)}
+.pad{padding:16px}
+.row{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.tiles{display:grid;grid-template-columns:repeat(auto-fill,minmax(145px,1fr));gap:12px;margin-top:16px}
+.tile{padding:14px 16px;text-decoration:none;display:block}
+.tile b{font-size:28px;display:block;letter-spacing:-.5px}.tile span{font-size:13.5px;color:var(--mute)}
+.tile.alerta{border-color:#F2C2B2;background:#FFF8F5}.tile.alerta b{color:var(--bad)}
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;border-radius:10px;padding:10px 14px;font-weight:600;font-size:14px;text-decoration:none;white-space:nowrap}
+.btn.main{background:var(--o);color:#fff}.btn.dark{background:var(--ink);color:#fff}.btn.line{border:1px solid var(--line);background:#fff}
+.btn.ok{background:var(--ok);color:#fff}.btn.bad{background:#fff;border:1px solid #F2C2B2;color:#8E2F14}
+.btn.sm{padding:6px 10px;font-size:13px;border-radius:8px}
+.btn:disabled{opacity:.5;cursor:default}
+.field{display:flex;flex-direction:column;gap:5px;margin:8px 0}
+.field label{font-size:13px;font-weight:600}
+.field small{color:var(--mute);font-size:12.5px}
+.field input,.field select,.field textarea{border:1px solid var(--line);border-radius:10px;padding:10px 12px;background:#fff;outline:none;font-size:15px;width:100%}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--o)}
+.f2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.f3{display:grid;grid-template-columns:2fr 1fr 1fr;gap:0 12px}
+.err{background:#FCEBE6;color:#8E2F14;border-radius:10px;padding:10px 12px;font-size:14px;margin-top:10px}
+.okmsg{background:#E1F5EE;color:#0F5C46;border-radius:10px;padding:10px 12px;font-size:14px;margin-top:10px}
+.hint{font-size:13px;margin-top:4px}.hint.b{color:var(--ok)}.hint.m{color:var(--bad)}
+.empty{padding:22px 16px;text-align:center;color:var(--mute);font-size:14px}
+.loading{padding:40px;text-align:center;color:var(--mute)}
+.pill{display:inline-flex;font-size:12px;font-weight:600;border-radius:99px;padding:3px 9px;white-space:nowrap}
+.pill.g{background:#E1F5EE;color:#0F6E56}.pill.y{background:#FFF4D6;color:#7A5A00}.pill.r{background:#FCEBE6;color:#8E2F14}.pill.n{background:#F1EFE8;color:#77756F}
+table{width:100%;border-collapse:collapse;font-size:14px}
+th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.4px;color:var(--mute);font-weight:600;padding:10px 12px;border-bottom:1px solid var(--line)}
+td{padding:11px 12px;border-top:1px solid var(--line);vertical-align:top}
+tr.click{cursor:pointer}tr.click:hover td{background:#FBFAF7}
+.tw{overflow-x:auto}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:10px;overflow:hidden;background:#fff}
+.seg button{padding:8px 12px;font-size:13.5px;font-weight:500;border-left:1px solid var(--line)}
+.seg button:first-child{border-left:0}
+.seg button.on{background:var(--ink);color:#fff}
+.buscar{border:1px solid var(--line);border-radius:10px;padding:9px 12px;background:#fff;min-width:220px;flex:1;max-width:340px}
+.pasos{display:grid;grid-template-columns:repeat(6,1fr);gap:8px;margin:16px 0 6px}
+.paso{background:#fff;border:1px solid var(--line);border-radius:12px;padding:10px 12px;font-size:13px}
+.paso b{display:block;font-size:13.5px;margin-bottom:2px}
+.paso.hecho{border-color:#9FD9C5;background:#F2FBF7}.paso.hecho b::before{content:'✓ ';color:var(--ok)}
+.paso.ahora{border-color:var(--o);box-shadow:0 0 0 2px var(--o2)}
+.ficha>div,.cols>div{min-width:0}
+.ficha{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;align-items:start}
+.item{display:flex;gap:10px;align-items:center;padding:10px 0;border-top:1px solid var(--line)}
+.item:first-child{border-top:0}
+.item .t{flex:1;min-width:0}.item small{color:var(--mute);font-size:12.5px;display:block}
+.op{padding:14px 16px;border-top:1px solid var(--line)}
+.op:first-child{border-top:0}
+.op p{margin:6px 0 10px;line-height:1.45}
+.est{color:#E8A317;letter-spacing:1px}
+.hor{display:grid;grid-template-columns:92px 1fr 1fr 1fr 1fr;gap:6px;align-items:center;font-size:13.5px;margin-top:4px}
+.hor input{border:1px solid var(--line);border-radius:8px;padding:6px 6px;font-size:13.5px;width:100%}
+.aud td small{color:var(--mute)}
+.aud td:first-child{white-space:nowrap}
+.aud .det{font-size:13px;color:#4A4945;max-width:420px;word-break:break-word}
+code{font-family:ui-monospace,Menlo,monospace;font-size:12.5px;background:#F1EFE8;border-radius:5px;padding:1px 5px}
+@media (max-width:860px){
+  .lay{grid-template-columns:1fr}
+  .side{flex-direction:row;overflow-x:auto;border-right:0;border-bottom:1px solid var(--line);padding:8px}
+  .side a{flex:none;padding:8px 10px}
+  main{padding:16px}
+  .cols,.ficha,.f2,.f3{grid-template-columns:minmax(0,1fr)}
+  .hor{grid-template-columns:70px repeat(4,minmax(0,1fr));gap:4px}
+  .hor input{font-size:12px;padding:5px 2px}
+  .hor b{font-size:12.5px}
+  .pasos{grid-template-columns:repeat(3,1fr)}
+}
+</style>
+</head>
+<body>
+<div id="app"><div class="loading">Cargando…</div></div>
+
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/+esm';
+const SUPABASE_URL = 'https://jvqunkkiypbvypgumxql.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_r1mug-RwM_3RCSoUQ6lo0Q_KiHiSHlZ';
+const sb = createClient(SUPABASE_URL, SUPABASE_KEY);
+const MODO_PRUEBA = true;
+
+const $app = document.getElementById('app');
+const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const pesos = n => '$' + Number(n || 0).toLocaleString('es-AR', {maximumFractionDigits: 0});
+const errorTexto = e => (e?.message || String(e)).replace(/^ERROR:\s*/, '');
+const fecha = d => d ? new Date(d.length === 10 ? d + 'T12:00' : d).toLocaleDateString('es-AR', {day: 'numeric', month: 'short', year: 'numeric'}) : '—';
+const fechaHora = d => new Date(d).toLocaleString('es-AR', {day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit'});
+const tel = t => !t ? '—' : /^54911\d{8}$/.test(t) ? `11 ${t.slice(5, 9)}-${t.slice(9)}` : /^549\d{10}$/.test(t) ? `+54 9 ${t.slice(3)}` : '+' + t;
+const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const ESTADO = {activo: ['g', 'Activo'], pendiente: ['y', 'Pendiente'], suspendido: ['r', 'Pausado']};
+const pillEstado = e => `<span class="pill ${ESTADO[e]?.[0] || 'n'}">${ESTADO[e]?.[1] || esc(e)}</span>`;
+
+let S = null, YO = null;
+let RUBROS = [], CATS = [], PLANES = [], COMS = [];
+const nombreLocal = id => COMS.find(c => c.id === id)?.nombre || (id ? '#' + id : '—');
+const nombrePlan = id => PLANES.find(p => p.id === id)?.nombre || '—';
+const cap = s => s ? s[0].toUpperCase() + s.slice(1) : s;
+
+// CUIT: mismo control que la base (dígito verificador)
+function cuitValido(c) {
+  const d = String(c || '').replace(/\D/g, '');
+  if (d.length !== 11 || !['20','23','24','27','30','33','34'].includes(d.slice(0, 2))) return false;
+  const w = [5,4,3,2,7,6,5,4,3,2]; let s = 0;
+  for (let i = 0; i < 10; i++) s += +d[i] * w[i];
+  let r = 11 - s % 11; if (r === 11) r = 0;
+  return r < 10 && r === +d[10];
+}
+const formatoCuit = c => { const d = String(c || '').replace(/\D/g, ''); return d.length === 11 ? `${d.slice(0,2)}-${d.slice(2,10)}-${d[10]}` : c; };
+const diasA = f => f ? Math.round((new Date(f + 'T12:00') - new Date(new Date().toDateString() + ' 12:00')) / 864e5) : null;
+function pillAbono(f) {
+  const d = diasA(f);
+  if (d === null) return '<span class="pill n">Sin abono</span>';
+  if (d < 0) return `<span class="pill r">Vencido hace ${-d} d</span>`;
+  if (d <= 7) return `<span class="pill y">Vence en ${d} d</span>`;
+  return `<span class="pill g">Hasta ${fecha(f)}</span>`;
+}
+// Botón que pide un segundo toque para confirmar (sin ventanas emergentes)
+function confirmar(btn, accion) {
+  if (btn.dataset.seguro) return accion();
+  const t = btn.textContent; btn.dataset.seguro = '1'; btn.textContent = 'Tocá de nuevo para confirmar';
+  setTimeout(() => { if (btn.isConnected) { delete btn.dataset.seguro; btn.textContent = t; } }, 4000);
+}
+
+// ---------- Estructura ----------
+let PEND = {opiniones: 0, reportes: 0};
+function marco(sec, html) {
+  const n = PEND.opiniones + PEND.reportes;
+  $app.innerHTML = `<div class="top"><span class="lf">LF</span><b>Moderación</b><a href="./">Ir a la app ›</a></div>`
+    + (MODO_PRUEBA ? '<div class="demo">Proyecto de prueba · locales de ejemplo</div>' : '')
+    + `<div class="lay"><nav class="side">
+        <a href="#/" class="${sec === 'inicio' ? 'on' : ''}"><i>🏠</i>Inicio</a>
+        <a href="#/locales" class="${sec === 'locales' ? 'on' : ''}"><i>🏪</i>Locales</a>
+        <a href="#/opiniones" class="${sec === 'opiniones' ? 'on' : ''}"><i>💬</i>Opiniones${n ? `<em>${n}</em>` : ''}</a>
+        <a href="#/abonos" class="${sec === 'abonos' ? 'on' : ''}"><i>💳</i>Abonos</a>
+        <a href="#/auditoria" class="${sec === 'auditoria' ? 'on' : ''}"><i>📋</i>Auditoría</a>
+      </nav><main>${html}</main></div>`;
+}
+const cargando = sec => marco(sec, '<div class="loading">Cargando…</div>');
+
+async function datosBase() {
+  const [r, c, p, k] = await Promise.all([
+    sb.from('rubros').select('id,nombre,modulo').order('orden'),
+    sb.from('categorias_comercio').select('id,rubro_id,nombre').order('nombre'),
+    sb.from('planes').select('*').order('orden'),
+    sb.from('comercios').select('id,nombre,slug,altura,mano,estado,verificado,plan_id,abono_vence,rubro_id,creado').order('nombre')]);
+  RUBROS = r.data || []; CATS = c.data || []; PLANES = p.data || []; COMS = k.data || [];
+}
+async function contarPendientes() {
+  const [o, r] = await Promise.all([
+    sb.from('opiniones').select('id', {count: 'exact', head: true}).eq('estado', 'pendiente'),
+    sb.from('reportes').select('id', {count: 'exact', head: true}).eq('estado', 'abierto')]);
+  PEND = {opiniones: o.count || 0, reportes: r.count || 0};
+}
+
+// ---------- Entrar ----------
+async function iniciar() {
+  const {data: {session}} = await sb.auth.getSession(); S = session;
+  const caja = (t, p) => { $app.innerHTML = `<div class="top"><span class="lf">LF</span><b>Moderación</b></div><main style="max-width:520px;margin:0 auto"><h1>${t}</h1>${p}</main>`; };
+  if (!S) {
+    caja('Panel del moderador', `<p class="sub">Entrá primero con tu celular en la app.</p><a class="btn main" style="margin-top:16px" href="./#/perfil">Entrar con mi celular</a>
+      ${MODO_PRUEBA ? '<div class="card pad" style="margin-top:16px;font-size:14px;line-height:1.5"><b>Modo prueba:</b> el moderador entra con 11 0000 0004 y el código 444444.</div>' : ''}`);
+    return false;
+  }
+  const {data} = await sb.from('perfiles').select('id,nombre,telefono,es_moderador').eq('id', S.user.id).maybeSingle();
+  YO = data;
+  if (!YO?.es_moderador) {
+    caja('Solo para moderación', '<p class="sub">Este panel es para quien administra el portal. Tu cuenta no tiene ese permiso.</p><a class="btn line" style="margin-top:16px" href="./">Volver a la app</a>');
+    return false;
+  }
+  await Promise.all([datosBase(), contarPendientes()]);
+  return true;
+}
+
+// ---------- Inicio ----------
+async function pInicio() {
+  cargando('inicio');
+  const [al, bq] = await Promise.all([
+    sb.from('alertas_resenas').select('*'),
+    sb.from('busquedas_sin_resultado').select('*').limit(8)]);
+  const n = e => COMS.filter(c => c.estado === e).length;
+  const sinVerificar = COMS.filter(c => c.estado === 'pendiente');
+  const vencidos = COMS.filter(c => c.estado === 'activo' && diasA(c.abono_vence) !== null && diasA(c.abono_vence) < 0);
+  const porVencer = COMS.filter(c => c.estado === 'activo' && diasA(c.abono_vence) !== null && diasA(c.abono_vence) >= 0 && diasA(c.abono_vence) <= 7);
+  const tile = (num, txt, href, alerta) => `<a class="card tile ${alerta && num ? 'alerta' : ''}" href="${href}"><b>${num}</b><span>${txt}</span></a>`;
+  marco('inicio', `<h1>Hola${YO.nombre ? ', ' + esc(YO.nombre.split(' ')[0]) : ''}</h1><p class="sub">Cómo anda la calle hoy.</p>
+    <div class="tiles">
+      ${tile(n('activo'), 'locales activos', '#/locales/activo')}
+      ${tile(sinVerificar.length, 'esperando alta', '#/locales/pendiente', true)}
+      ${tile(n('suspendido'), 'pausados', '#/locales/suspendido')}
+      ${tile(PEND.opiniones, 'opiniones por revisar', '#/opiniones', true)}
+      ${tile(PEND.reportes, 'reportes abiertos', '#/opiniones/reportes', true)}
+      ${tile(vencidos.length, 'abonos vencidos', '#/abonos', true)}
+    </div>
+    <div class="cols" style="margin-top:6px">
+      <div><h2>Para hacer</h2><div class="card pad">
+        ${sinVerificar.map(c => `<div class="item"><div class="t"><b>${esc(c.nombre)}</b><small>Alta sin terminar · ${c.verificado ? 'verificado, falta activar' : 'falta verificar'}</small></div><a class="btn line sm" href="#/local/${c.id}">Seguir</a></div>`).join('')}
+        ${vencidos.map(c => `<div class="item"><div class="t"><b>${esc(c.nombre)}</b><small>Abono vencido hace ${-diasA(c.abono_vence)} días y sigue activo</small></div><a class="btn line sm" href="#/local/${c.id}">Ver</a></div>`).join('')}
+        ${porVencer.map(c => `<div class="item"><div class="t"><b>${esc(c.nombre)}</b><small>El abono vence el ${fecha(c.abono_vence)}</small></div><a class="btn line sm" href="#/local/${c.id}">Ver</a></div>`).join('')}
+        ${(al.data || []).map(a => `<div class="item"><div class="t"><b>⚠ ${esc(nombreLocal(a.comercio_id))}</b><small>${a.malas_de_cuentas_nuevas} opiniones malas de cuentas nuevas en 24 h. Puede ser un ataque.</small></div><a class="btn line sm" href="#/opiniones">Revisar</a></div>`).join('')}
+        ${!sinVerificar.length && !porVencer.length && !vencidos.length && !(al.data || []).length ? '<div class="empty">Nada pendiente. 👌</div>' : ''}
+      </div></div>
+      <div><h2>Lo que buscan y no encuentran</h2><div class="card pad">
+        ${(bq.data || []).map(b => `<div class="item"><div class="t"><b>“${esc(b.busqueda)}”</b></div><span class="pill n">${b.veces} ${b.veces == 1 ? 'vez' : 'veces'}</span></div>`).join('') || '<div class="empty">Todavía no hay búsquedas sin resultado.</div>'}
+        <p class="sub" style="margin-top:10px;font-size:13px">Últimos 30 días. Sirve para saber a qué rubro ir a ofrecerle el portal.</p>
+      </div></div>
+    </div>`);
+}
+
+// ---------- Locales ----------
+async function pLocales(filtro = 'todos') {
+  await datosBase();
+  let q = '';
+  const dibujar = () => {
+    const lista = COMS.filter(c => (filtro === 'todos' || c.estado === filtro) && (!q || c.nombre.toLowerCase().includes(q)));
+    document.getElementById('tabla').innerHTML = lista.length ? `<table><thead><tr><th>Local</th><th>Rubro</th><th>Altura</th><th>Estado</th><th>Plan</th><th>Abono</th></tr></thead><tbody>
+      ${lista.map(c => `<tr class="click" data-id="${c.id}"><td><b>${esc(c.nombre)}</b><br><small class="sub">/${esc(c.slug)}</small></td>
+        <td>${esc(RUBROS.find(r => r.id === c.rubro_id)?.nombre || '')}</td><td>${c.altura} <small class="sub">${c.mano}</small></td>
+        <td>${pillEstado(c.estado)} ${c.verificado ? '' : '<span class="pill n">Sin verificar</span>'}</td>
+        <td>${esc(cap(nombrePlan(c.plan_id)))}</td><td>${pillAbono(c.abono_vence)}</td></tr>`).join('')}</tbody></table>`
+      : '<div class="empty">No hay locales con ese filtro.</div>';
+    document.querySelectorAll('tr[data-id]').forEach(tr => tr.onclick = () => location.hash = '#/local/' + tr.dataset.id);
+  };
+  marco('locales', `<div class="row" style="justify-content:space-between"><div><h1>Locales</h1><p class="sub">${COMS.length} en total, de Av. Mitre a las vías.</p></div>
+      <a class="btn main" href="#/nuevo">+ Dar de alta un local</a></div>
+    <div class="row" style="margin:16px 0 12px"><div class="seg">${[['todos','Todos'],['activo','Activos'],['pendiente','Pendientes'],['suspendido','Pausados']].map(([k, t]) =>
+      `<button data-f="${k}" class="${filtro === k ? 'on' : ''}">${t}</button>`).join('')}</div>
+      <input class="buscar" id="q" placeholder="Buscar por nombre"></div>
+    <div class="card tw" id="tabla"></div>`);
+  document.querySelectorAll('[data-f]').forEach(b => b.onclick = () => { filtro = b.dataset.f; document.querySelectorAll('[data-f]').forEach(x => x.classList.toggle('on', x === b)); dibujar(); });
+  document.getElementById('q').oninput = e => { q = e.target.value.trim().toLowerCase(); dibujar(); };
+  dibujar();
+}
+
+// ---------- Alta ----------
+const opcionesRubro = sel => RUBROS.map(r => `<option value="${r.id}" ${r.id === sel ? 'selected' : ''}>${esc(r.nombre)}</option>`).join('');
+const opcionesCat = (rubro, sel) => '<option value="">(sin categoría)</option>' + CATS.filter(c => c.rubro_id === rubro).map(c => `<option value="${c.id}" ${c.id === sel ? 'selected' : ''}>${esc(c.nombre)}</option>`).join('');
+const opcionesPlan = sel => PLANES.map(p => `<option value="${p.id}" ${p.id === sel ? 'selected' : ''}>${esc(cap(p.nombre))}${+p.precio_mensual ? ' · ' + pesos(p.precio_mensual) + '/mes' : ''}</option>`).join('');
+function engancharCuit(input, hint) {
+  const ver = () => { const v = input.value.trim(); hint.className = 'hint ' + (!v ? '' : cuitValido(v) ? 'b' : 'm');
+    hint.textContent = !v ? '' : cuitValido(v) ? '✓ CUIT válido' : 'El CUIT no es válido: revisá los números.'; };
+  input.oninput = ver; input.onblur = () => { if (cuitValido(input.value)) input.value = formatoCuit(input.value); ver(); }; ver();
+}
+function engancharRubro(rubro, cat) { rubro.onchange = () => cat.innerHTML = opcionesCat(+rubro.value); }
+
+async function pNuevo() {
+  await datosBase();
+  marco('locales', `<a href="#/locales" class="sub" style="text-decoration:none">‹ Locales</a><h1 style="margin-top:6px">Dar de alta un local</h1>
+    <p class="sub">Queda <b>pendiente</b>: no aparece en la app hasta que lo verifiques y lo actives.</p>
+    <form id="fa" class="card pad" style="margin-top:16px;max-width:720px">
+      <div class="field"><label for="a-nom">Nombre del local</label><input id="a-nom" required placeholder="Ej.: Lencería Doña Rosa"></div>
+      <div class="f2"><div class="field"><label for="a-rub">Rubro</label><select id="a-rub">${opcionesRubro(RUBROS[0]?.id)}</select></div>
+        <div class="field"><label for="a-cat">Categoría</label><select id="a-cat">${opcionesCat(RUBROS[0]?.id)}</select></div></div>
+      <div class="f2"><div class="field"><label for="a-alt">Altura en Las Flores</label><input id="a-alt" type="number" min="0" max="2000" required placeholder="Ej.: 333">
+          <small id="a-mano">La mano (par o impar) sale sola de la altura.</small></div>
+        <div class="field"><label for="a-plan">Plan</label><select id="a-plan">${opcionesPlan(PLANES[0]?.id)}</select></div></div>
+      <div class="f2"><div class="field"><label for="a-wa">WhatsApp del local</label><input id="a-wa" inputmode="tel" required placeholder="11 2345 6789"></div>
+        <div class="field"><label for="a-ig">Instagram (opcional)</label><input id="a-ig" placeholder="@usuario"></div></div>
+      <div class="f2"><div class="field"><label for="a-cuit">CUIT (si ya lo tenés)</label><input id="a-cuit" placeholder="30-12345678-9"><div class="hint" id="a-cuit-h"></div></div>
+        <div class="field"><label for="a-due">Celular del dueño</label><input id="a-due" inputmode="tel" placeholder="11 2345 6789">
+          <small>Cuando entre a la app con ese número, queda como dueño solo.</small></div></div>
+      <div id="a-msg"></div>
+      <div class="row" style="margin-top:12px"><button class="btn main">Dar de alta</button><a class="btn line" href="#/locales">Cancelar</a></div>
+    </form>`);
+  const $ = id => document.getElementById(id);
+  engancharRubro($('a-rub'), $('a-cat')); engancharCuit($('a-cuit'), $('a-cuit-h'));
+  $('a-alt').oninput = () => { const a = +$('a-alt').value; $('a-mano').textContent = $('a-alt').value === '' ? 'La mano (par o impar) sale sola de la altura.' : `Mano ${a % 2 ? 'impar' : 'par'}.`; };
+  $('fa').onsubmit = async e => {
+    e.preventDefault();
+    const b = e.submitter; b.disabled = true; $('a-msg').innerHTML = '';
+    const alt = +$('a-alt').value;
+    const {data, error} = await sb.rpc('alta_comercio', {
+      p_nombre: $('a-nom').value, p_rubro: +$('a-rub').value, p_altura: alt, p_mano: alt % 2 ? 'impar' : 'par',
+      p_whatsapp: $('a-wa').value, p_plan: +$('a-plan').value, p_categoria: +$('a-cat').value || null,
+      p_cuit: $('a-cuit').value.trim() || null, p_telefono_duenio: $('a-due').value.trim() || null,
+      p_instagram: $('a-ig').value.trim().replace(/^@/, '') || null});
+    if (error) { b.disabled = false; $('a-msg').innerHTML = `<div class="err">${esc(errorTexto(error))}</div>`; return; }
+    location.hash = '#/local/' + data;
+  };
+}
+
+// ---------- Ficha del local ----------
+async function pLocal(id) {
+  cargando('locales');
+  await datosBase();
+  const [c, eq, inv, docs, pagos, hor, vers, san, aud] = await Promise.all([
+    sb.from('comercios').select('*').eq('id', id).maybeSingle(),
+    sb.from('comercio_usuarios').select('usuario_id,rol,perfiles(nombre,telefono)').eq('comercio_id', id),
+    sb.from('invitaciones_equipo').select('*').eq('comercio_id', id).is('usada_en', null),
+    sb.storage.from('documentos').list(String(id), {sortBy: {column: 'created_at', order: 'desc'}}),
+    sb.from('pagos_abono').select('*').eq('comercio_id', id).order('creado', {ascending: false}),
+    sb.from('horarios').select('*').eq('comercio_id', id).order('abre'),
+    sb.from('vidriera_versiones').select('id,estado').eq('comercio_id', id),
+    sb.from('sanciones').select('*').eq('comercio_id', id).order('creado', {ascending: false}).limit(5),
+    sb.from('auditoria').select('*').eq('comercio_id', id).order('creado', {ascending: false}).limit(12)]);
+  const L = c.data;
+  if (!L) { marco('locales', '<div class="empty">No encontré ese local.</div>'); return; }
+  const equipo = eq.data || [], invs = inv.data || [], archivos = (docs.data || []).filter(f => f.name && !f.name.startsWith('.'));
+  const publicada = (vers.data || []).some(v => v.estado === 'publicada');
+  const tieneDuenio = equipo.some(m => m.rol === 'duenio'), invitoDuenio = invs.some(i => i.rol === 'duenio');
+  const pasos = [
+    ['Datos', 'Cargados', true],
+    ['Dueño', tieneDuenio ? 'Ya entró' : invitoDuenio ? 'Invitado, falta que entre' : 'Falta invitarlo', tieneDuenio],
+    ['Constancia', archivos.length ? 'Subida' : 'Falta subirla', archivos.length > 0],
+    ['Verificado', L.verificado ? fecha(L.verificado_en) : 'Falta', L.verificado],
+    ['Vidriera', publicada ? 'Publicada' : 'Falta publicar', publicada],
+    ['Activo', L.estado === 'activo' ? 'En la app' : L.estado === 'suspendido' ? 'Pausado' : 'Todavía no', L.estado === 'activo']];
+  const ahora = pasos.findIndex(p => !p[2]);
+  const porDia = d => (hor.data || []).filter(h => h.dia_semana === d);
+  const hh = t => t ? t.slice(0, 5) : '';
+  const ultimaPausa = (san.data || []).find(s => s.tipo !== 'aviso');
+
+  marco('locales', `<a href="#/locales" class="sub" style="text-decoration:none">‹ Locales</a>
+    <div class="row" style="justify-content:space-between;margin-top:6px"><div><h1>${esc(L.nombre)} ${pillEstado(L.estado)}</h1>
+      <p class="sub">Las Flores ${L.altura} (${L.mano}) · /${esc(L.slug)}</p></div>
+      <div class="row"><a class="btn line" href="./#/l/${esc(L.slug)}" target="_blank">Ver página</a><a class="btn dark" href="editor.html?c=${L.id}" target="_blank">Editar vidriera</a></div></div>
+    <div class="pasos">${pasos.map((p, i) => `<div class="paso ${p[2] ? 'hecho' : ''} ${i === ahora ? 'ahora' : ''}"><b>${i + 1}. ${p[0]}</b><span class="sub">${p[1]}</span></div>`).join('')}</div>
+
+    <div class="ficha">
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <section class="card pad"><h3>Estado</h3>
+          ${L.estado === 'activo' ? `<p class="sub">Se ve en la app.</p>
+            <div class="field"><label for="p-mot">Pausar la vidriera</label><select id="p-mot"><option>Abono vencido</option><option>No cumple las reglas del portal</option><option>Pedido del dueño</option><option value="">Otro motivo…</option></select></div>
+            <div class="field" id="p-otro-c" hidden><input id="p-otro" placeholder="Escribí el motivo"></div>
+            <button class="btn bad" id="pausar">Pausar el local</button>`
+          : L.estado === 'suspendido' ? `<p class="sub">Pausado${ultimaPausa ? ` el ${fecha(ultimaPausa.creado)}: <b>${esc(ultimaPausa.motivo)}</b>` : ''}. No aparece en la app.</p>
+            <button class="btn ok" id="activar" style="margin-top:10px" ${L.verificado ? '' : 'disabled'}>Reactivar</button>`
+          : `<p class="sub">Pendiente: no aparece en la app.${L.verificado ? '' : ' Para activarlo, primero verificalo.'}</p>
+            <button class="btn ok" id="activar" style="margin-top:10px" ${L.verificado ? '' : 'disabled'}>Activar el local</button>
+            ${publicada ? '' : '<p class="hint m">Ojo: todavía no tiene la vidriera publicada. Armala con el dueño en “Editar vidriera”.</p>'}`}
+          <div id="e-msg"></div></section>
+
+        <section class="card pad"><h3>Verificación</h3>
+          <div class="field"><label for="v-cuit">CUIT</label><div class="row"><input id="v-cuit" value="${esc(L.cuit || '')}" placeholder="30-12345678-9" style="flex:1" ${L.verificado ? 'disabled' : ''}>
+            ${L.verificado ? '' : '<button class="btn line sm" id="v-guardar">Guardar</button>'}</div><div class="hint" id="v-cuit-h"></div></div>
+          <div class="field"><label>Constancia de CUIT</label>
+            ${archivos.map(f => `<div class="item"><div class="t"><b>📄 ${esc(f.name)}</b><small>${fecha(f.created_at)}</small></div><button class="btn line sm" data-ver="${esc(f.name)}">Ver</button></div>`).join('') || '<p class="sub">Todavía no hay constancia.</p>'}
+            <label class="btn line sm" style="align-self:flex-start;margin-top:6px">Subir constancia (PDF o foto)<input type="file" id="v-doc" accept="application/pdf,image/jpeg,image/png" hidden></label></div>
+          ${L.verificado ? `<p class="okmsg">✓ Verificado el ${fecha(L.verificado_en)}.</p>` : '<button class="btn dark" id="verificar" style="margin-top:8px">Marcar como verificado</button>'}
+          <div id="v-msg"></div></section>
+
+        <section class="card pad"><h3>Plan y abono</h3>
+          <div class="f2"><div class="field"><label for="ab-plan">Plan</label><select id="ab-plan">${opcionesPlan(L.plan_id)}</select></div>
+            <div class="field"><label>Vence</label><div style="padding:8px 0">${pillAbono(L.abono_vence)}</div></div></div>
+          <div class="row" style="margin:6px 0 4px"><b style="font-size:14px">Registrar un pago</b></div>
+          <div class="f2"><div class="field"><label for="ab-monto">Monto</label><input id="ab-monto" type="number" min="0" step="100" placeholder="0"></div>
+            <div class="field"><label for="ab-meses">Meses</label><select id="ab-meses">${[1,2,3,6,12].map(m => `<option value="${m}">${m} ${m === 1 ? 'mes' : 'meses'}</option>`).join('')}</select></div></div>
+          <button class="btn main" id="ab-pagar">Registrar pago</button>
+          <p class="sub" style="font-size:12.5px;margin-top:6px">El vencimiento se corre desde el actual (o desde hoy, si ya venció).</p>
+          <div id="ab-msg"></div>
+          ${(pagos.data || []).length ? `<div style="margin-top:12px">${pagos.data.map(p => `<div class="item"><div class="t"><b>${pesos(p.monto)} · ${p.meses} ${p.meses === 1 ? 'mes' : 'meses'}</b><small>${fecha(p.creado)} · cubre ${fecha(p.desde)} al ${fecha(p.hasta)}</small></div></div>`).join('')}</div>` : ''}
+        </section>
+      </div>
+
+      <div style="display:flex;flex-direction:column;gap:16px">
+        <section class="card pad"><h3>Equipo</h3>
+          ${equipo.map(m => `<div class="item"><div class="t"><b>${esc(m.perfiles?.nombre || 'Sin nombre')}</b><small>${tel(m.perfiles?.telefono)} · ${m.rol === 'duenio' ? 'Dueño' : 'Empleado'}</small></div><button class="btn line sm" data-sacar="${m.usuario_id}">Quitar</button></div>`).join('')}
+          ${invs.map(i => `<div class="item"><div class="t"><b>${tel(i.telefono)}</b><small>Invitado como ${i.rol === 'duenio' ? 'dueño' : 'empleado'} · todavía no entró</small></div><button class="btn line sm" data-borrar-inv="${i.id}">Quitar</button></div>`).join('')}
+          ${!equipo.length && !invs.length ? '<p class="sub">Nadie todavía.</p>' : ''}
+          <form id="inv" class="row" style="margin-top:10px;align-items:flex-end"><div class="field" style="flex:1;margin:0"><label for="inv-tel">Invitar por celular</label><input id="inv-tel" inputmode="tel" placeholder="11 2345 6789" required></div>
+            <select id="inv-rol" class="btn line" style="padding:10px"><option value="duenio">Dueño</option><option value="empleado">Empleado</option></select><button class="btn dark">Invitar</button></form>
+          <div id="inv-msg"></div></section>
+
+        <section class="card pad"><h3>Datos del local</h3><form id="fd">
+          <div class="field"><label for="d-nom">Nombre</label><input id="d-nom" value="${esc(L.nombre)}" required></div>
+          <div class="f2"><div class="field"><label for="d-rub">Rubro</label><select id="d-rub">${opcionesRubro(L.rubro_id)}</select></div>
+            <div class="field"><label for="d-cat">Categoría</label><select id="d-cat">${opcionesCat(L.rubro_id, L.categoria_id)}</select></div></div>
+          <div class="f2"><div class="field"><label for="d-alt">Altura</label><input id="d-alt" type="number" min="0" max="2000" value="${L.altura}" required></div>
+            <div class="field"><label for="d-slug">Dirección en el portal</label><input id="d-slug" value="${esc(L.slug)}" pattern="[a-z0-9-]+" required></div></div>
+          <div class="f2"><div class="field"><label for="d-wa">WhatsApp</label><input id="d-wa" value="${esc(L.whatsapp)}" required></div>
+            <div class="field"><label for="d-ig">Instagram</label><input id="d-ig" value="${esc(L.instagram || '')}"></div></div>
+          <button class="btn line">Guardar datos</button><div id="d-msg"></div></form></section>
+
+        <section class="card pad"><h3>Horarios</h3><p class="sub" style="font-size:13px">Hasta dos turnos por día. Vacío = cerrado.</p>
+          <div class="hor" style="color:var(--mute);font-size:12px;margin-top:8px"><span></span><span>Abre</span><span>Cierra</span><span>Abre</span><span>Cierra</span></div>
+          ${[1,2,3,4,5,6,0].map(d => { const h = porDia(d); return `<div class="hor" data-dia="${d}"><b>${DIAS[d]}</b>
+            <input type="time" value="${hh(h[0]?.abre)}"><input type="time" value="${hh(h[0]?.cierra)}"><input type="time" value="${hh(h[1]?.abre)}"><input type="time" value="${hh(h[1]?.cierra)}"></div>`; }).join('')}
+          <div class="row" style="margin-top:10px"><button class="btn line" id="h-guardar">Guardar horarios</button><button class="btn line sm" id="h-copiar">Copiar el lunes a toda la semana</button></div>
+          <div id="h-msg"></div></section>
+
+        <section class="card pad"><h3>Últimos cambios</h3>
+          ${agrupar(aud.data || []).map(g => `<div class="item"><div class="t"><b>${esc(TABLAS[g[0].tabla] || g[0].tabla)} · ${g[0].accion}${g.length > 1 ? ` (${g.length})` : ''}</b><small>${fechaHora(g[0].creado)} · ${esc(g.map(resumen).filter(Boolean).slice(0, 3).join(' · '))}${g.length > 3 ? ' …' : ''}</small></div></div>`).join('') || '<p class="sub">Sin cambios todavía.</p>'}
+          <a class="btn line sm" style="margin-top:8px" href="#/auditoria/${L.id}">Ver toda la auditoría</a></section>
+      </div>
+    </div>`);
+
+  const $ = x => document.getElementById(x);
+  const msg = (box, ok, t) => $(box).innerHTML = `<div class="${ok ? 'okmsg' : 'err'}">${esc(t)}</div>`;
+  const recargar = () => pLocal(id);
+
+  // Estado
+  if ($('p-mot')) $('p-mot').onchange = () => $('p-otro-c').hidden = $('p-mot').value !== '';
+  if ($('pausar')) $('pausar').onclick = e => confirmar(e.target, async () => {
+    const motivo = $('p-mot').value || $('p-otro').value.trim();
+    if (!motivo) return msg('e-msg', false, 'Escribí el motivo de la pausa.');
+    const {error} = await sb.from('sanciones').insert({comercio_id: id, tipo: 'suspension', motivo, creado_por: YO.id});
+    error ? msg('e-msg', false, errorTexto(error)) : recargar();
+  });
+  if ($('activar')) $('activar').onclick = async () => {
+    const {error} = await sb.from('comercios').update({estado: 'activo'}).eq('id', id);
+    error ? msg('e-msg', false, errorTexto(error)) : recargar();
+  };
+
+  // Verificación
+  engancharCuit($('v-cuit'), $('v-cuit-h'));
+  if ($('v-guardar')) $('v-guardar').onclick = async () => {
+    const v = $('v-cuit').value.trim();
+    if (v && !cuitValido(v)) return msg('v-msg', false, 'El CUIT no es válido: revisá los números.');
+    const {error} = await sb.from('comercios').update({cuit: v ? formatoCuit(v) : null}).eq('id', id);
+    error ? msg('v-msg', false, /unique|duplicad/i.test(error.message) ? 'Ese CUIT ya está cargado en otro local.' : errorTexto(error)) : msg('v-msg', true, 'CUIT guardado.');
+  };
+  $('v-doc').onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    if (f.size > 10 * 1024 * 1024) return msg('v-msg', false, 'El archivo pesa más de 10 MB.');
+    const ext = f.type === 'application/pdf' ? 'pdf' : f.type === 'image/png' ? 'png' : 'jpg';
+    msg('v-msg', true, 'Subiendo…');
+    const {error} = await sb.storage.from('documentos').upload(`${id}/constancia-${Date.now()}.${ext}`, f, {contentType: f.type});
+    error ? msg('v-msg', false, errorTexto(error)) : recargar();
+  };
+  document.querySelectorAll('[data-ver]').forEach(b => b.onclick = async () => {
+    const w = window.open('', '_blank');
+    const {data, error} = await sb.storage.from('documentos').createSignedUrl(`${id}/${b.dataset.ver}`, 300);
+    if (error) { w?.close(); return msg('v-msg', false, errorTexto(error)); }
+    if (w) w.location = data.signedUrl; else location.href = data.signedUrl;
+  });
+  if ($('verificar')) $('verificar').onclick = async () => {
+    const v = $('v-cuit').value.trim();
+    if (v && formatoCuit(v) !== L.cuit) {
+      if (!cuitValido(v)) return msg('v-msg', false, 'El CUIT no es válido: revisá los números.');
+      const r = await sb.from('comercios').update({cuit: formatoCuit(v)}).eq('id', id);
+      if (r.error) return msg('v-msg', false, errorTexto(r.error));
+    }
+    const {error} = await sb.from('comercios').update({verificado: true}).eq('id', id);
+    error ? msg('v-msg', false, errorTexto(error)) : recargar();
+  };
+
+  // Plan y pagos
+  $('ab-plan').onchange = async () => {
+    const {error} = await sb.from('comercios').update({plan_id: +$('ab-plan').value}).eq('id', id);
+    error ? msg('ab-msg', false, errorTexto(error)) : msg('ab-msg', true, 'Plan cambiado a ' + cap(nombrePlan(+$('ab-plan').value)) + '.');
+  };
+  $('ab-pagar').onclick = e => confirmar(e.target, async () => {
+    const {error} = await sb.from('pagos_abono').insert({comercio_id: id, monto: +$('ab-monto').value || 0, meses: +$('ab-meses').value});
+    error ? msg('ab-msg', false, errorTexto(error)) : recargar();
+  });
+
+  // Equipo
+  $('inv').onsubmit = async e => {
+    e.preventDefault();
+    let t = $('inv-tel').value.replace(/\D/g, ''); if (t.length === 10) t = '549' + t;
+    if (t.length < 12) return msg('inv-msg', false, 'Revisá el número: código de área y número, sin el 15. Ej.: 11 2345 6789.');
+    const {error} = await sb.from('invitaciones_equipo').insert({comercio_id: id, telefono: t, rol: $('inv-rol').value});
+    error ? msg('inv-msg', false, /unique|duplicad/i.test(error.message) ? 'Ese celular ya estaba invitado.' : errorTexto(error)) : recargar();
+  };
+  document.querySelectorAll('[data-sacar]').forEach(b => b.onclick = () => confirmar(b, async () => {
+    const {error} = await sb.from('comercio_usuarios').delete().eq('comercio_id', id).eq('usuario_id', b.dataset.sacar);
+    error ? msg('inv-msg', false, errorTexto(error)) : recargar();
+  }));
+  document.querySelectorAll('[data-borrar-inv]').forEach(b => b.onclick = async () => {
+    const {error} = await sb.from('invitaciones_equipo').delete().eq('id', +b.dataset.borrarInv);
+    error ? msg('inv-msg', false, errorTexto(error)) : recargar();
+  });
+
+  // Datos
+  engancharRubro($('d-rub'), $('d-cat'));
+  $('fd').onsubmit = async e => {
+    e.preventDefault();
+    const alt = +$('d-alt').value;
+    const {error} = await sb.from('comercios').update({nombre: $('d-nom').value.trim(), rubro_id: +$('d-rub').value, categoria_id: +$('d-cat').value || null,
+      altura: alt, mano: alt % 2 ? 'impar' : 'par', slug: $('d-slug').value.trim(), whatsapp: $('d-wa').value.replace(/\D/g, ''),
+      instagram: $('d-ig').value.trim().replace(/^@/, '') || null}).eq('id', id);
+    error ? msg('d-msg', false, /slug/.test(error.message) ? 'Esa dirección ya la usa otro local.' : errorTexto(error)) : msg('d-msg', true, 'Datos guardados.');
+  };
+
+  // Horarios
+  $('h-copiar').onclick = () => {
+    const lun = [...document.querySelectorAll('.hor[data-dia="1"] input')].map(i => i.value);
+    document.querySelectorAll('.hor[data-dia]').forEach(r => { if (r.dataset.dia !== '0') r.querySelectorAll('input').forEach((i, k) => i.value = lun[k]); });
+  };
+  $('h-guardar').onclick = async () => {
+    const filas = [];
+    for (const r of document.querySelectorAll('.hor[data-dia]')) {
+      const v = [...r.querySelectorAll('input')].map(i => i.value);
+      for (const k of [0, 2]) {
+        if (!v[k] && !v[k + 1]) continue;
+        if (!v[k] || !v[k + 1] || v[k] >= v[k + 1]) return msg('h-msg', false, `Revisá el ${DIAS[r.dataset.dia].toLowerCase()}: cada turno necesita hora de apertura y de cierre, y cerrar después de abrir.`);
+        filas.push({comercio_id: id, dia_semana: +r.dataset.dia, abre: v[k], cierra: v[k + 1]});
+      }
+    }
+    const d = await sb.from('horarios').delete().eq('comercio_id', id);
+    if (d.error) return msg('h-msg', false, errorTexto(d.error));
+    if (filas.length) { const {error} = await sb.from('horarios').insert(filas); if (error) return msg('h-msg', false, errorTexto(error)); }
+    msg('h-msg', true, 'Horarios guardados.');
+  };
+}
+
+// ---------- Opiniones y reportes ----------
+const MOTIVOS = {falsa: 'Es falsa', ofensiva: 'Ofensiva', datos_personales: 'Tiene datos personales', no_corresponde: 'No corresponde', spam: 'Spam', otro: 'Otro'};
+const OBJETOS = {opinion: 'Opinión', historia: 'Historia', media: 'Foto o video', producto: 'Producto', comercio: 'Local', perfil: 'Cuenta'};
+const origen = o => o.compra_caja_id ? 'compró con QR' : o.apartado_id ? 'retiró un apartado' : o.turno_id ? 'tuvo un turno' : 'hizo un pedido';
+const estrellas = n => `<span class="est">${'★'.repeat(n)}${'☆'.repeat(5 - n)}</span>`;
+
+async function pOpiniones(vista = 'pendientes') {
+  cargando('opiniones');
+  await contarPendientes();
+  const [op, rep, al] = await Promise.all([
+    sb.from('opiniones').select('*').eq('estado', 'pendiente').order('creado'),
+    sb.from('reportes').select('*').eq('estado', 'abierto').order('creado'),
+    sb.from('alertas_resenas').select('*')]);
+  const reportes = rep.data || [];
+  const idsOp = reportes.filter(r => r.objeto === 'opinion').map(r => +r.objeto_id).filter(Boolean);
+  const reportadas = idsOp.length ? (await sb.from('opiniones').select('*').in('id', idsOp)).data || [] : [];
+  const alerta = new Set((al.data || []).map(a => a.comercio_id));
+
+  const tarjetaOp = o => `<div class="op" data-op="${o.id}"><div class="row" style="justify-content:space-between"><div><b>${esc(nombreLocal(o.comercio_id))}</b> ${estrellas(o.estrellas)}
+      ${alerta.has(o.comercio_id) ? ' <span class="pill r">⚠ ráfaga de malas</span>' : ''}</div><small class="sub">${fechaHora(o.creado)}</small></div>
+    <p>${o.texto ? esc(o.texto) : '<i class="sub">(sin texto, solo estrellas)</i>'}</p>
+    <div class="row" style="justify-content:space-between"><small class="sub">${esc(o.autor_nombre || 'Vecino')} · ${origen(o)}</small>
+      <div class="row"><select class="btn line sm" data-motivo><option value="">Rechazar por…</option><option>Ofensiva o con insultos</option><option>Tiene datos personales</option><option>No habla del local</option><option>Spam o publicidad</option></select>
+        <button class="btn ok sm" data-publicar>Publicar</button></div></div><div data-msg></div></div>`;
+
+  marco('opiniones', `<h1>Opiniones</h1><p class="sub">Publicás o rechazás. Nunca se reescribe lo que dijo el vecino.</p>
+    <div class="seg" style="margin:16px 0 12px"><button data-v="pendientes" class="${vista === 'pendientes' ? 'on' : ''}">Por revisar (${(op.data || []).length})</button><button data-v="reportes" class="${vista === 'reportes' ? 'on' : ''}">Reportes (${reportes.length})</button></div>
+    ${vista === 'pendientes'
+      ? `<div class="card">${(op.data || []).map(tarjetaOp).join('') || '<div class="empty">No hay opiniones esperando. 👌</div>'}</div>`
+      : `<div class="card">${reportes.map(r => { const o = r.objeto === 'opinion' ? reportadas.find(x => x.id === +r.objeto_id) : null; return `<div class="op" data-rep="${r.id}">
+          <div class="row" style="justify-content:space-between"><div><span class="pill r">${esc(MOTIVOS[r.motivo] || r.motivo)}</span> <b>${esc(OBJETOS[r.objeto] || r.objeto)}</b> en ${esc(nombreLocal(r.comercio_id || o?.comercio_id))}</div><small class="sub">${fechaHora(r.creado)}</small></div>
+          ${r.detalle ? `<p class="sub">Quien reporta dice: “${esc(r.detalle)}”</p>` : ''}
+          ${o ? `<div class="card pad" style="background:#FBFAF7;margin:8px 0">${estrellas(o.estrellas)} <small class="sub">${esc(o.autor_nombre || '')} · ${o.estado}</small><p style="margin:6px 0 0">${esc(o.texto || '(sin texto)')}</p>${o.respuesta_local ? `<p class="sub" style="margin:6px 0 0">Respuesta del local: ${esc(o.respuesta_local)}</p>` : ''}</div>` : `<p class="sub">Objeto #${esc(r.objeto_id)}</p>`}
+          <div class="row" style="justify-content:flex-end"><button class="btn line sm" data-res="rechazado">No corresponde, dejar como está</button>
+            <button class="btn bad sm" data-res="aceptado">${r.objeto === 'opinion' ? 'Aceptar y ocultar la opinión' : 'Aceptar'}</button></div><div data-msg></div></div>`; }).join('') || '<div class="empty">No hay reportes abiertos. 👌</div>'}</div>`}`);
+
+  document.querySelectorAll('[data-v]').forEach(b => b.onclick = () => location.hash = b.dataset.v === 'reportes' ? '#/opiniones/reportes' : '#/opiniones');
+  document.querySelectorAll('[data-op]').forEach(box => {
+    const id = +box.dataset.op, out = t => box.querySelector('[data-msg]').innerHTML = `<div class="err">${esc(t)}</div>`;
+    const cambiar = async (estado, motivo_rechazo) => {
+      const {error} = await sb.from('opiniones').update({estado, motivo_rechazo}).eq('id', id);
+      if (error) return out(errorTexto(error));
+      box.remove(); PEND.opiniones--; if (!document.querySelector('[data-op]')) pOpiniones('pendientes');
+    };
+    box.querySelector('[data-publicar]').onclick = () => cambiar('publicada', null);
+    box.querySelector('[data-motivo]').onchange = e => e.target.value && cambiar('rechazada', e.target.value);
+  });
+  document.querySelectorAll('[data-rep]').forEach(box => box.querySelectorAll('[data-res]').forEach(b => b.onclick = () => confirmar(b, async () => {
+    const {error} = await sb.from('reportes').update({estado: b.dataset.res, resolucion: b.dataset.res === 'aceptado' ? 'Aceptado por moderación' : 'Rechazado por moderación'}).eq('id', +box.dataset.rep);
+    if (error) return box.querySelector('[data-msg]').innerHTML = `<div class="err">${esc(errorTexto(error))}</div>`;
+    pOpiniones('reportes');
+  })));
+}
+
+// ---------- Abonos ----------
+async function pAbonos() {
+  cargando('abonos');
+  const {data} = await sb.from('abonos').select('*');
+  const lista = (data || []).sort((a, b) => (a.dias ?? 99999) - (b.dias ?? 99999));
+  const vencidos = lista.filter(a => a.dias !== null && a.dias < 0 && a.estado === 'activo');
+  marco('abonos', `<h1>Abonos</h1><p class="sub">Primero los que vencieron. El pago se registra en la ficha de cada local.</p>
+    ${vencidos.length ? `<div class="err" style="margin-top:14px">${vencidos.length} ${vencidos.length === 1 ? 'local activo tiene' : 'locales activos tienen'} el abono vencido. Podés pausarlos desde su ficha.</div>` : ''}
+    <div class="card tw" style="margin-top:14px"><table><thead><tr><th>Local</th><th>Estado</th><th>Plan</th><th>Abono</th><th></th></tr></thead><tbody>
+    ${lista.map(a => `<tr class="click" data-id="${a.comercio_id}"><td><b>${esc(a.nombre)}</b></td><td>${pillEstado(a.estado)}</td><td>${esc(cap(a.plan))}</td><td>${pillAbono(a.abono_vence)}</td><td style="text-align:right"><span class="btn line sm">Abrir ›</span></td></tr>`).join('')}
+    </tbody></table></div>`);
+  document.querySelectorAll('tr[data-id]').forEach(tr => tr.onclick = () => location.hash = '#/local/' + tr.dataset.id);
+}
+
+// ---------- Auditoría ----------
+const TABLAS = {comercios: 'Datos del local', comercio_usuarios: 'Equipo', horarios: 'Horarios', comercio_estilo: 'Estilo de la vidriera',
+  comercio_intro: 'Intro', comercio_bloques: 'Bloques', vidriera_versiones: 'Versión de la vidriera', productos: 'Producto', variantes: 'Stock',
+  promos: 'Promo', compras_caja: 'Compra en caja', movimientos_puntos: 'Puntos', apartados: 'Apartado', opiniones: 'Opinión',
+  sanciones: 'Sanción', avisos_seguidores: 'Aviso a seguidores', pagos_abono: 'Pago del abono'};
+const corto = v => v === null || v === undefined ? '—' : typeof v === 'object' ? JSON.stringify(v).slice(0, 40) : String(v).slice(0, 40);
+// Cambios seguidos del mismo tipo en el mismo minuto se muestran juntos (ej.: 12 horarios)
+function agrupar(lista) {
+  const out = [];
+  for (const a of lista) {
+    const g = out[out.length - 1];
+    if (g && g[0].tabla === a.tabla && g[0].accion === a.accion && g[0].usuario_id === a.usuario_id && Math.abs(new Date(g[0].creado) - new Date(a.creado)) < 60000) g.push(a); else out.push([a]);
+  }
+  return out;
+}
+function resumen(a) {
+  const d = a.detalle || {};
+  if (a.accion === 'editar') {
+    const ks = Object.keys(d).filter(k => !['actualizado', 'creado', 'moderado_por', 'publicado_en', 'verificado_por', 'verificado_en', 'respondido_en', 'resuelto_por', 'resuelto_en'].includes(k));
+    return ks.slice(0, 3).map(k => `${k}: ${corto(d[k]?.antes)} → ${corto(d[k]?.despues)}`).join(' · ') + (ks.length > 3 ? ` · y ${ks.length - 3} más` : '');
+  }
+  if (d.dia_semana !== undefined) return `${DIAS[d.dia_semana]} ${String(d.abre).slice(0, 5)} a ${String(d.cierra).slice(0, 5)}`;
+  const nombre = d.nombre || d.titulo || d.motivo || d.talle || d.codigo || (d.monto !== undefined ? pesos(d.monto) : '') || d.tipo || d.rol || '';
+  return String(nombre).slice(0, 80);
+}
+async function pAuditoria(local) {
+  cargando('auditoria');
+  await datosBase();
+  let filtro = local ? +local : 0, desde = 0; const PAG = 50;
+  marco('auditoria', `<h1>Auditoría</h1><p class="sub">Quién cambió qué y cuándo, en cualquier local. La llena la base sola: nadie la puede editar.</p>
+    <div class="row" style="margin:16px 0 12px"><select id="au-l" class="buscar"><option value="0">Todos los locales</option>${COMS.map(c => `<option value="${c.id}" ${c.id === filtro ? 'selected' : ''}>${esc(c.nombre)}</option>`).join('')}</select></div>
+    <div class="card tw"><table class="aud"><thead><tr><th>Cuándo</th><th>Quién</th><th>Local</th><th>Qué</th><th>Detalle</th></tr></thead><tbody id="au-b"></tbody></table></div>
+    <div style="text-align:center;margin-top:12px"><button class="btn line" id="au-mas" hidden>Ver más</button></div>`);
+  const nombres = {};
+  const traer = async (limpiar) => {
+    if (limpiar) { desde = 0; document.getElementById('au-b').innerHTML = ''; }
+    let q = sb.from('auditoria').select('*').order('creado', {ascending: false}).range(desde, desde + PAG - 1);
+    if (filtro) q = q.eq('comercio_id', filtro);
+    const {data} = await q; const filas = data || [];
+    const faltan = [...new Set(filas.map(a => a.usuario_id).filter(u => u && !(u in nombres)))];
+    if (faltan.length) { const {data: ps} = await sb.from('perfiles').select('id,nombre,telefono,es_moderador').in('id', faltan); (ps || []).forEach(p => nombres[p.id] = p); }
+    const quien = u => { const p = nombres[u]; return !u ? '<small>La base (automático)</small>' : p ? `${esc(p.nombre || 'Sin nombre')}<br><small>${tel(p.telefono)}${p.es_moderador ? ' · moderador' : ''}</small>` : '<small>(cuenta borrada)</small>'; };
+    document.getElementById('au-b').insertAdjacentHTML('beforeend', filas.map(a => `<tr><td><small>${fechaHora(a.creado)}</small></td><td>${quien(a.usuario_id)}</td>
+      <td>${esc(nombreLocal(a.comercio_id))}</td><td><b>${esc(TABLAS[a.tabla] || a.tabla)}</b><br><small>${a.accion}</small></td><td class="det">${esc(resumen(a))}</td></tr>`).join('')
+      || (desde ? '' : '<tr><td colspan="5"><div class="empty">Sin cambios registrados.</div></td></tr>'));
+    desde += filas.length;
+    document.getElementById('au-mas').hidden = filas.length < PAG;
+  };
+  document.getElementById('au-l').onchange = e => { filtro = +e.target.value; traer(true); };
+  document.getElementById('au-mas').onclick = () => traer(false);
+  traer(true);
+}
+
+// ---------- Rutas ----------
+let listo = false;
+async function ruta() {
+  if (!listo) { listo = await iniciar(); if (!listo) return; }
+  const h = location.hash.replace(/^#\/?/, '').split('/');
+  try {
+    if (h[0] === 'locales') await pLocales(h[1] || 'todos');
+    else if (h[0] === 'nuevo') await pNuevo();
+    else if (h[0] === 'local' && +h[1]) await pLocal(+h[1]);
+    else if (h[0] === 'opiniones') await pOpiniones(h[1] === 'reportes' ? 'reportes' : 'pendientes');
+    else if (h[0] === 'abonos') await pAbonos();
+    else if (h[0] === 'auditoria') await pAuditoria(h[1]);
+    else await pInicio();
+  } catch (e) {
+    marco('inicio', `<div class="err">Algo falló al cargar: ${esc(errorTexto(e))}</div>`);
+  }
+  window.scrollTo(0, 0);
+}
+window.addEventListener('hashchange', ruta);
+sb.auth.onAuthStateChange((ev) => { if (ev === 'SIGNED_OUT') { listo = false; ruta(); } });
+ruta();
+</script>
+</body>
+</html>
